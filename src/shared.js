@@ -8,7 +8,8 @@ const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const RESTART_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
 const alive = (id) => id === RUN;
 
-const LOGO = '<svg viewBox="0 0 28 28" aria-hidden="true"><path d="M6.5 20.5C10.5 12 17 16.5 21.5 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="6.5" cy="20.5" r="3.6" fill="currentColor"/><circle cx="21.5" cy="7.5" r="3.6" fill="currentColor"/><circle cx="14" cy="14.3" r="2" fill="var(--surface)" stroke="currentColor" stroke-width="1.7"/></svg>';
+const LOGO = '<img class="brand-mark" src="{{MARK}}" alt="" width="32" height="32">';
+const BRAND = LOGO + '<img class="wordmark" src="{{WORDMARK}}" alt="Synaptiq" width="82" height="19">';
 
 function esc(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

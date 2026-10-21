@@ -1,43 +1,55 @@
-# Synaptiq
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
+    <img src="assets/logo.png" alt="Synaptiq" width="190">
+  </picture>
+</p>
 
-**No more waiting on the one person who knows.**
+<h3 align="center">No more waiting on the one person who knows.</h3>
 
-At engineering-heavy companies, critical know-how lives with a few experts. Engineers can usually find *what* a system does, but not *why* it works that way, so they search, wait, or interrupt, and the same experts answer the same questions again and again.
+<p align="center">
+  <a href="https://albertogomezsoteres.github.io/synaptiq-prototypes/"><b>Live site</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://albertogomezsoteres.github.io/synaptiq-prototypes/a/">Version A</a>
+  &nbsp;·&nbsp;
+  <a href="https://albertogomezsoteres.github.io/synaptiq-prototypes/b/">Version B</a>
+  &nbsp;·&nbsp;
+  <a href="https://albertogomezsoteres.github.io/synaptiq-prototypes/c/">Version C</a>
+</p>
 
-This repository contains three interactive prototypes. Each one tests a different hypothesis about where Synaptiq's loop (spot the gap, find the expert, validate once, reuse) should start.
+---
 
-| Version | Persona | Approach | Hypothesis |
-|---|---|---|---|
-| **A · Ask Synaptiq** | New-to-system engineer | **Pull:** the engineer asks | Engineers trust and act on answers that show source, owner and review date, and that admit "not found" and route the question. |
-| **B · Expert Inbox** | Go-to expert engineer | **Capture:** the expert validates | Experts capture what they know if each contribution is one click on a drafted answer, and they see the interruptions it saves. |
-| **C · Context Briefing** | Deployment / cross-team engineer | **Push:** Synaptiq goes first | Engineers get unblocked faster when Synaptiq shows what changed, why, who worked on it, and what nobody wrote down, before they ask. |
+## The problem
 
-All three versions share the same fictional company (Corvex Payments), the same data and the same visual design, so the only variable is the product approach. The scenarios come from our customer interviews.
+At engineering-heavy companies, critical know-how lives with a few experts. Engineers can usually find *what* a system does, but not *why* it works that way. So they search, wait, or interrupt, and the same experts answer the same questions again and again.
 
-## Live site
+Synaptiq closes that loop: it **spots the gap**, **finds the expert**, has them **validate once**, and makes the answer **reusable** for everyone after.
 
-`https://<username>.github.io/<repository>/`
+## Three versions, three hypotheses
 
-| Page | Path |
-|---|---|
-| Overview | `/` |
-| Version A | `/a/` |
-| Version B | `/b/` |
-| Version C | `/c/` |
+Each version pairs one persona from our customer discovery with a different product approach. The class vote tells us which persona and which approach to lead with.
 
-## Publish with GitHub Pages
+| | Version | Persona | Approach | Hypothesis | Validated if |
+|---|---|---|---|---|---|
+| **A** | [Ask Synaptiq](https://albertogomezsoteres.github.io/synaptiq-prototypes/a/) | New-to-system engineer | **Pull:** the engineer asks | Engineers trust and act on answers that show source, owner and review date, and that admit "not found" and route the question. | Testers would act on the answer and see "not found" as helpful. |
+| **B** | [Expert Inbox](https://albertogomezsoteres.github.io/synaptiq-prototypes/b/) | Go-to expert engineer | **Capture:** the expert validates | Experts capture what they know if each contribution is one click on a drafted answer, and they see the interruptions it saves. | Testers confirm an answer in under 30 seconds and prefer it to DMs. |
+| **C** | [Context Briefing](https://albertogomezsoteres.github.io/synaptiq-prototypes/c/) | Deployment / cross-team engineer | **Push:** Synaptiq goes first | Engineers get unblocked faster when Synaptiq shows what changed, why, who worked on it, and what nobody wrote down, before they ask. | Testers make the right call on their first ticket without asking anyone. |
 
-1. Push this repository to GitHub as a public repository.
-2. Open **Settings → Pages**.
-3. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-4. Select branch **main** and folder **/docs**, then **Save**.
+All three versions run on the same fictional company (Corvex Payments), with the same data and the same design, so the only variable is the product approach. The scenarios come from our customer interviews.
 
-The site is live at the address above after about a minute.
+### What we deliberately left out
 
-## Structure
+Real integrations, live AI, login, the manager dashboard and admin settings. Each version tests one idea, end to end, in about two minutes.
+
+## Try it
+
+Open the [live site](https://albertogomezsoteres.github.io/synaptiq-prototypes/), pick a version and follow the **Try this** steps on the left. Every version has a **Restart demo** button and works on desktop and mobile, in light and dark mode.
+
+## Project structure
 
 ```
-docs/            Published site: one self-contained HTML file per page
+assets/          Logo files
+docs/            Published site (GitHub Pages): one self-contained HTML file per page
 src/
   shared.css     Design tokens and components used by every page
   shared.js      Shared interactions: streaming answers, guided steps, notifications
@@ -46,27 +58,31 @@ src/
   b.html         Version B: Expert Inbox
   c.html         Version C: Context Briefing
 build.py         Builds docs/ from src/
-tests/qa.py      Browser test that clicks through every flow and saves screenshots
+tests/qa.py      Browser test that clicks through every flow
 ```
 
-## Develop
+## Development
 
-Pages are plain HTML, CSS and JavaScript with no framework, no backend and no dependencies, so they load instantly and behave the same in every demo.
+Plain HTML, CSS and JavaScript: no framework, no backend, no dependencies.
 
 ```bash
 python3 build.py                     # rebuild docs/ after editing src/
 python3 -m http.server -d docs 8000  # preview at http://localhost:8000
 ```
 
-Browser tests (optional):
+Optional browser tests:
 
 ```bash
 pip install playwright && playwright install chromium
 python3 tests/qa.py a                # also: b, c, index; add --mobile or --dark
 ```
 
+**Workflow:** work on `dev`, run `python3 build.py`, open a pull request to `main`. GitHub Pages publishes `main` from `/docs`.
+
 ## Team
 
-Konur Nordberg (CEO) · Alberto Gomez (CTO) · Debshree Chowdhury (CMO) · Xianyu Wang (CFO) · Weikai Liao (COO)
+| Konur Nordberg | Alberto Gomez | Debshree Chowdhury | Xianyu Wang | Weikai Liao |
+|:---:|:---:|:---:|:---:|:---:|
+| CEO | CTO | CMO | CFO | COO |
 
-MENG 570, Fall 2026
+<sub>MENG 570 · Fall 2026</sub>

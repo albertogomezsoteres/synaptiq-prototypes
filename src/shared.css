@@ -1,26 +1,28 @@
 /* Synaptiq UI kit. App shell: left rail (workspace, navigation, guided steps) beside a scrolling work area under a scenario band. */
 :root {
-  --paper: #f2f5f6;
+  --paper: #f3f6fa;
   --surface: #ffffff;
-  --sunk: #e9eef0;
-  --ink: #13202a;
-  --muted: #566672;
-  --faint: #8796a1;
-  --line: #d6dfe4;
-  --line-strong: #b9c6cd;
-  --brand: #0a7468;
-  --brand-deep: #075a51;
+  --sunk: #e8eef5;
+  --ink: #0b1f3a;
+  --muted: #51627a;
+  --faint: #8493a8;
+  --line: #d6dfea;
+  --line-strong: #b5c4d6;
+  --brand: #0f6bc4;
+  --brand-deep: #0a4f99;
   --brand-ink: #ffffff;
-  --brand-weak: #e0f2ee;
+  --brand-weak: #e4effb;
+  --cyan: #0bb6c7;
   --gap: #9d5b00;
   --gap-weak: #fff0d4;
   --risk: #b42318;
   --risk-weak: #fdeceb;
   --focus: #2f6fdb;
-  --band: #13202a;
-  --band-ink: #eef3f4;
-  --shadow: 0 1px 2px rgba(19, 32, 42, .05), 0 8px 24px -12px rgba(19, 32, 42, .18);
-  --shadow-lift: 0 2px 4px rgba(19, 32, 42, .06), 0 18px 36px -16px rgba(19, 32, 42, .28);
+  --band: #072548;
+  --band-ink: #eef4fb;
+  --wordmark-filter: none;
+  --shadow: 0 1px 2px rgba(11, 31, 58, .05), 0 8px 24px -12px rgba(11, 31, 58, .2);
+  --shadow-lift: 0 2px 4px rgba(11, 31, 58, .06), 0 18px 36px -16px rgba(11, 31, 58, .3);
 
   --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --f-ui: "Schibsted Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -34,18 +36,20 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0c1317; --surface: #131c21; --sunk: #19242a; --ink: #e3eaed; --muted: #98a7b1; --faint: #6d7c86;
-    --line: #233139; --line-strong: #344651; --brand: #3cc1b0; --brand-deep: #5fd4c4; --brand-ink: #052823; --brand-weak: #0f2f2b;
-    --gap: #f0a73a; --gap-weak: #33250d; --risk: #f2766c; --risk-weak: #3a1a18; --focus: #7aa7ff; --band: #1c2930; --band-ink: #e3eaed;
+    --paper: #09121d; --surface: #0f1b29; --sunk: #152436; --ink: #e4ecf6; --muted: #98a9bf; --faint: #6b7d95;
+    --line: #1f3147; --line-strong: #30475f; --brand: #5aa9ff; --brand-deep: #8cc4ff; --brand-ink: #04162d; --brand-weak: #0f2a4a; --cyan: #3fd3e0;
+    --gap: #f0a73a; --gap-weak: #33250d; --risk: #f2766c; --risk-weak: #3a1a18; --focus: #9cc2ff; --band: #0f2747; --band-ink: #e4ecf6;
+    --wordmark-filter: brightness(0) invert(.94);
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
     --shadow-lift: 0 2px 4px rgba(0, 0, 0, .45), 0 20px 40px -16px rgba(0, 0, 0, .8);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0c1317; --surface: #131c21; --sunk: #19242a; --ink: #e3eaed; --muted: #98a7b1; --faint: #6d7c86;
-  --line: #233139; --line-strong: #344651; --brand: #3cc1b0; --brand-deep: #5fd4c4; --brand-ink: #052823; --brand-weak: #0f2f2b;
-  --gap: #f0a73a; --gap-weak: #33250d; --risk: #f2766c; --risk-weak: #3a1a18; --focus: #7aa7ff; --band: #1c2930; --band-ink: #e3eaed;
+  --paper: #09121d; --surface: #0f1b29; --sunk: #152436; --ink: #e4ecf6; --muted: #98a9bf; --faint: #6b7d95;
+  --line: #1f3147; --line-strong: #30475f; --brand: #5aa9ff; --brand-deep: #8cc4ff; --brand-ink: #04162d; --brand-weak: #0f2a4a; --cyan: #3fd3e0;
+  --gap: #f0a73a; --gap-weak: #33250d; --risk: #f2766c; --risk-weak: #3a1a18; --focus: #9cc2ff; --band: #0f2747; --band-ink: #e4ecf6;
+  --wordmark-filter: brightness(0) invert(.94);
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, .45), 0 20px 40px -16px rgba(0, 0, 0, .8);
   color-scheme: dark;
@@ -89,9 +93,9 @@ p { margin: 0; }
 @keyframes fade { from { opacity: 0; } }
 
 .brand { display: flex; align-items: center; gap: 10px; color: var(--brand); text-decoration: none; }
-.brand svg { width: 28px; height: 28px; flex: none; transition: transform .5s var(--spring); }
-.brand:hover svg { transform: rotate(-12deg) scale(1.06); }
-.brand b { font-family: var(--f-display); font-size: 19px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+.brand .brand-mark { width: 32px; height: 32px; object-fit: contain; flex: none; transition: transform .6s var(--spring); }
+.brand:hover .brand-mark { transform: rotate(-14deg) scale(1.08); }
+.brand .wordmark { height: 19px; width: auto; display: block; filter: var(--wordmark-filter); }
 .workspace { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color .2s, background .2s; }
 .workspace:hover { border-color: var(--line-strong); background: var(--paper); }
 .ws-logo { width: 28px; height: 28px; border-radius: 8px; background: var(--ink); color: var(--surface); display: grid; place-items: center; font: 700 13px var(--f-display); flex: none; }
