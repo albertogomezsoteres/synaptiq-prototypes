@@ -1,0 +1,353 @@
+<title>Synaptiq Context Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..700&display=swap">
+<style>
+/*SHARED_CSS*/
+/* Version C: account page where the briefing arrives before any question */
+.work-inner { max-width: 1140px; }
+.page-h { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
+.page-h h1 { font-size: clamp(24px, 3.4vw, 30px); }
+.page-h p { color: var(--muted); font-size: 14.5px; max-width: 60ch; }
+.accounts { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.acc { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); transition: background .2s, padding .3s var(--ease); animation: rise .45s var(--ease) both; }
+.acc:nth-child(2) { animation-delay: .06s; } .acc:nth-child(3) { animation-delay: .12s; }
+.acc:hover { background: var(--paper); padding-left: 20px; }
+.acc:hover .acc-logo { transform: rotate(-6deg) scale(1.06); }
+.acc:last-child { border-bottom: 0; }
+.acc.new { background: var(--brand-weak); }
+.acc.new:hover { background: color-mix(in srgb, var(--brand-weak) 70%, var(--surface)); }
+.acc-logo { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font: 700 15px var(--f-display); color: #fff; transition: transform .4s var(--spring); }
+.acc h3 { font: 650 15.5px var(--f-ui); }
+.acc p { font-size: 13px; color: var(--muted); }
+.acc-r { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.back { border: 0; background: transparent; color: var(--muted); font-size: 13.5px; padding: 0; margin-bottom: 10px; display: inline-flex; gap: 4px; align-items: center; transition: color .2s, transform .25s var(--ease); }
+.back:hover { color: var(--brand); transform: translateX(-3px); }
+.acct-head { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.acct-head .acc-logo { width: 48px; height: 48px; font-size: 18px; }
+.acct-head h1 { font-size: clamp(24px, 3.4vw, 30px); }
+.acct-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: start; }
+.side-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); min-width: 0; transition: border-color .25s, box-shadow .35s var(--ease); }
+.panel:hover { border-color: var(--line-strong); box-shadow: var(--shadow); }
+.side-col > .panel.reveal:nth-child(2) { animation-delay: .1s; } .side-col > .panel.reveal:nth-child(3) { animation-delay: .2s; }
+.panel-h { padding: 14px 18px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.panel-h h2 { font-size: 16.5px; }
+.panel-b { padding: 12px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+.brief { box-shadow: var(--shadow); }
+.brief:hover { box-shadow: var(--shadow-lift); }
+.brief-top { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.brief-top h2 { font-size: 20px; }
+.brief-top .lead { font-size: 15.5px; line-height: 1.55; }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.tl { list-style: none; margin: 0; padding: 8px 20px 18px; }
+.tl li { display: grid; grid-template-columns: 74px 20px minmax(0, 1fr); gap: 12px; position: relative; padding: 12px 8px 12px 0; border-radius: 10px; transition: background .2s; }
+.tl li:hover { background: var(--paper); }
+.tl.enter li { animation: rise .5s var(--ease) both; }
+.tl.enter li:nth-child(2) { animation-delay: .08s; } .tl.enter li:nth-child(3) { animation-delay: .16s; } .tl.enter li:nth-child(4) { animation-delay: .24s; } .tl.enter li:nth-child(5) { animation-delay: .32s; }
+.tl li::before { content: ""; position: absolute; left: 95px; top: 30px; bottom: -14px; width: 1.5px; background: var(--line); }
+.tl li:last-child::before { display: none; }
+.tl .when { font-size: 13px; color: var(--muted); padding-top: 1px; font-variant-numeric: tabular-nums; }
+.tl .node { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--brand); background: var(--surface); display: grid; place-items: center; position: relative; z-index: 1; margin-top: 2px; transition: transform .3s var(--spring); }
+.tl li:hover .node { transform: scale(1.2); }
+.tl .node::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+.tl li.gap .node { border-color: var(--gap); border-style: dashed; animation: ping 2s var(--ease) infinite; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gap) 45%, transparent); } 70%, 100% { box-shadow: 0 0 0 9px transparent; } }
+.tl li.gap .node::after { background: transparent; border: 1.5px solid var(--gap); width: 4px; height: 4px; }
+.tl .what { font-weight: 650; font-size: 15px; line-height: 1.35; }
+.tl .why { font-size: 14px; line-height: 1.45; margin-top: 3px; }
+.tl .why b { font-weight: 600; color: var(--muted); }
+.tl li.gap .why { color: var(--gap); font-weight: 600; }
+.tl li.closed .why { color: var(--ink); font-weight: 400; }
+.tl .by { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.tl .by .avatar { width: 20px; height: 20px; font-size: 9px; }
+.src { border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+.tl li.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { 0% { background: var(--brand-weak); } 100% { background: transparent; } }
+.person { display: flex; gap: 10px; align-items: center; }
+.person div { min-width: 0; font-size: 14px; line-height: 1.35; }
+.person div > span { display: block; font-size: 12.5px; color: var(--muted); }
+.gapcard { border-color: color-mix(in srgb, var(--gap) 45%, var(--line)); }
+.gapcard.closed { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
+.gq { font-weight: 650; font-size: 15px; line-height: 1.35; }
+.small { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.draft { display: flex; flex-direction: column; gap: 8px; }
+.draft textarea { width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); padding: 9px 11px; font-size: 14px; line-height: 1.45; }
+.waiting { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+.waiting .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--brand); animation: spin .8s linear infinite; }
+.reply { background: var(--brand-weak); border-radius: var(--r-md); padding: 10px 12px; font-size: 14px; line-height: 1.5; }
+.ticket { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px; display: flex; flex-direction: column; gap: 6px; background: var(--paper); }
+.ticket .id { font-family: var(--f-code); font-size: 12px; color: var(--muted); }
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choices button { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-md); padding: 10px 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: border-color .2s, background .2s, transform .25s var(--ease); }
+.choices button::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-strong); flex: none; transition: border-width .2s, border-color .2s; }
+.choices button:hover { border-color: var(--brand); transform: translateX(3px); }
+.choices button[aria-pressed="true"] { border-color: var(--ink); background: var(--paper); }
+.choices button[aria-pressed="true"]::before { border: 4.5px solid var(--ink); }
+.verdict { border-radius: var(--r-md); padding: 10px 12px; font-size: 14px; line-height: 1.45; }
+.verdict.warn { background: var(--gap-weak); }
+.verdict.bad { background: var(--risk-weak); }
+.verdict.good { background: var(--brand-weak); }
+.verdict b { display: block; margin-bottom: 2px; }
+.recap { margin-top: 18px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--band); color: var(--band-ink); display: flex; flex-direction: column; gap: 6px; }
+.recap h2 { font-size: 20px; }
+.recap p { opacity: .85; max-width: 70ch; font-size: 14.5px; }
+.prep { padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; }
+.skel { display: flex; flex-direction: column; gap: 9px; }
+.skel i { display: block; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--sunk) 0%, var(--line) 50%, var(--sunk) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+.skel i:nth-child(1) { width: 92%; } .skel i:nth-child(2) { width: 78%; } .skel i:nth-child(3) { width: 85%; } .skel i:nth-child(4) { width: 40%; }
+.prep h2 { font-size: 18px; }
+@media (max-width: 980px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .acc { grid-template-columns: 36px minmax(0, 1fr); }
+  .acc-r { grid-column: 1 / -1; justify-content: flex-start; }
+  .tl { padding-left: 14px; padding-right: 14px; }
+  .tl li { grid-template-columns: 20px minmax(0, 1fr); }
+  .tl li::before { left: 9px; }
+  .tl .when { grid-column: 2; grid-row: 1; }
+  .tl .node { grid-column: 1; grid-row: 1 / span 2; }
+  .tl .body { grid-column: 2; }
+  .brief-top { padding: 16px 14px; }
+}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <a class="brand" id="brand" href="{{HOME}}" aria-label="Synaptiq, all versions"></a>
+    <div class="workspace"><div class="ws-logo">C</div><div class="ws-meta"><strong>Corvex Payments</strong><span>Solutions engineering</span></div></div>
+    <nav class="nav" aria-label="Synaptiq">
+      <a class="on" href="#accounts" onclick="return false">My accounts <span class="count">3</span></a>
+      <a href="#briefings" onclick="return false">Briefings</a>
+      <a href="#gaps" onclick="return false">Open gaps <span class="count" id="gapCount">1</span></a>
+    </nav>
+    <section class="try" id="try" aria-label="Demo steps"></section>
+    <div class="rail-foot">
+      <span>Version C of 3</span>
+      <a href="{{HOME}}">All three versions</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="scenario">
+      <div class="who" aria-hidden="true">N</div>
+      <p><b>You're Nico, a solutions engineer at Corvex Payments.</b> This morning you were assigned a customer you've never worked with. You haven't asked anything yet.</p>
+      <button class="restart" id="restart" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Restart demo</button>
+    </div>
+    <div class="work" id="work"><div class="work-inner" id="view"></div></div>
+  </div>
+</div>
+
+<script>
+//SHARED_JS
+$("#brand").innerHTML = LOGO + "<b>Synaptiq</b>";
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+let S, steps;
+
+const EVENTS = [
+  { when: "Sep 2026", what: "Payouts moved from daily to weekly", why: "Bluewater's finance team reconciles every Friday.", who: ["JP", 4, "Jordan Park"], src: "BLU-88" },
+  { when: "Jul 2026", what: "Manual approval for payouts over $50,000", why: "Bluewater's auditor required it after a duplicate payout.", who: ["JP", 4, "Jordan Park"], src: "BLU-61" },
+  { when: "Mar 2026", what: "Extra escalation step added to failed payouts", why: null, who: ["JO", 2, "Jamie Ortiz"], src: "PR #311" },
+  { when: "Jan 2026", what: "Webhook retries raised from 3 to 5", why: "Bluewater's ERP times out at month-end and drops webhooks.", who: ["MC", 1, "Maria Chen"], src: "BLU-23" },
+  { when: "Nov 2025", what: "Account went live on the standard payout flow", why: "Standard onboarding.", who: ["JO", 2, "Jamie Ortiz"], src: "BLU-1" },
+];
+const ANSWER = "Bluewater's ops team must get a phone call before any failed payout is retried. It's in their contract (MSA §7.2) after an automatic retry double-paid one of their carriers. Please keep it.";
+
+function init() {
+  RUN++;
+  S = { stage: "list", closed: false, decided: null, asked: false };
+  steps = Checklist($("#try"), ["Open the account you were just assigned", "Close the gap the briefing found", "Decide what to do with your first ticket"]);
+  $("#gapCount").textContent = "1";
+  renderList();
+  $("#work").scrollTop = 0;
+}
+$("#restart").addEventListener("click", init);
+
+function renderList() {
+  $("#view").innerHTML = `
+    <div class="page-h reveal"><h1>My accounts</h1><p>Synaptiq prepares a briefing for every account you're assigned, so you start with the history instead of digging for it.</p></div>
+    <section class="accounts reveal" aria-label="Accounts">
+      <div class="acc new">
+        <div class="acc-logo" style="background:#1f5f8b">B</div>
+        <div><h3>Bluewater Logistics</h3><p>Freight carrier payouts · Enterprise plan · Assigned to you today</p></div>
+        <div class="acc-r"><span class="pill ok">Briefing ready</span><button class="btn primary cue" type="button" data-open-account>Open account</button></div>
+      </div>
+      <div class="acc">
+        <div class="acc-logo" style="background:#7a4fb5">H</div>
+        <div><h3>Halden Retail</h3><p>Card payments · Yours since May 2026</p></div>
+        <div class="acc-r"><button class="btn" type="button" data-other>Open account</button></div>
+      </div>
+      <div class="acc">
+        <div class="acc-logo" style="background:#2f7d55">N</div>
+        <div><h3>Northpine Clinics</h3><p>Patient billing · Yours since February 2026</p></div>
+        <div class="acc-r"><button class="btn" type="button" data-other>Open account</button></div>
+      </div>
+    </section>`;
+  $("[data-open-account]").addEventListener("click", openAccount);
+  $$("[data-other]").forEach((b) => b.addEventListener("click", () => toast("Your other accounts have no changes since you last opened them. Bluewater Logistics is the new one.")));
+}
+
+async function openAccount() {
+  const id = RUN;
+  S.stage = "account";
+  steps.complete(0);
+  $("#view").innerHTML = `
+    <button class="back" type="button" data-back><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>My accounts</button>
+    <div class="acct-head reveal">
+      <div class="acc-logo" style="background:#1f5f8b">B</div>
+      <div><h1>Bluewater Logistics</h1>
+        <div class="acct-meta"><span>Freight carrier payouts</span><span>Live since Nov 2025</span><span>Previous owner: Jamie Ortiz, now on the Platform team</span></div></div>
+    </div>
+    <div id="acctBody"><section class="panel prep reveal"><h2>Preparing your briefing</h2><div class="skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div id="prep"></div></section></div>`;
+  $("[data-back]").addEventListener("click", () => { RUN++; S.stage = "list"; renderList(); });
+  await think($("#prep"), ["Reading 47 tickets and 12 pull requests", "Reading 3 Slack channels and 2 call notes", "Checking which changes have a recorded reason"], id, 620);
+  if (!alive(id)) return;
+  renderAccount(true);
+}
+
+function timeline() {
+  return EVENTS.map((e, i) => {
+    const isGap = e.why === null;
+    const cls = isGap ? (S.closed ? "closed" : "gap") : "";
+    const why = isGap
+      ? (S.closed ? `<b>Why:</b> ${ANSWER}` : "No reason recorded anywhere")
+      : `<b>Why:</b> ${e.why}`;
+    const badge = isGap ? (S.closed ? '<span class="pill ok">Verified by Jamie Ortiz</span>' : '<span class="pill gap">Gap</span>' + (S.asked ? "" : '<button class="btn" type="button" data-tl-ask style="padding:3px 10px;font-size:12.5px">Ask Jamie</button>')) : "";
+    return `<li class="${cls}" data-ev="${i}">
+      <span class="when">${e.when}</span><span class="node" aria-hidden="true"></span>
+      <div class="body"><div class="what">${e.what}</div><div class="why">${why}</div>
+      <div class="by"><span class="avatar av-${e.who[1]}">${e.who[0]}</span><span>${e.who[2]}</span><span class="src">${e.src}</span>${badge}</div></div></li>`;
+  }).join("");
+}
+
+function renderAccount(animate) {
+  const id = RUN;
+  $("#acctBody").innerHTML = `
+    <div class="grid2">
+      <section class="panel brief ${animate ? "reveal" : ""}">
+        <div class="brief-top">
+          <h2>Before you touch this account</h2>
+          <p class="lead" id="lead">${animate ? "" : leadText()}</p>
+          <div class="counts"><span class="pill ok">${S.closed ? 5 : 4} of 5 changes explained</span><span class="pill ${S.closed ? "ok" : "gap"}" id="gapPill">${S.closed ? "No open gaps" : "1 gap"}</span><span class="pill plain">Sources: 47 tickets, 12 PRs, 3 channels</span></div>
+        </div>
+        <ol class="tl ${animate ? "enter" : ""}" aria-label="What changed, why, and who">${timeline()}</ol>
+      </section>
+      <div class="side-col">
+        <section class="panel gapcard ${S.closed ? "closed" : ""} ${animate ? "reveal" : ""}" id="gapPanel"></section>
+        <section class="panel ${animate ? "reveal" : ""}" id="ticketPanel"></section>
+        <section class="panel ${animate ? "reveal" : ""}">
+          <div class="panel-h"><h2>People who know this account</h2></div>
+          <div class="panel-b">
+            <div class="person"><span class="avatar av-2">JO</span><div><strong>Jamie Ortiz</strong><span>Made 4 of the last 6 changes · now on Platform</span></div></div>
+            <div class="person"><span class="avatar av-4">JP</span><div><strong>Jordan Park</strong><span>Customer success · owns the relationship</span></div></div>
+            <div class="person"><span class="avatar av-1">MC</span><div><strong>Maria Chen</strong><span>Payments · changed webhook retries</span></div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div id="recapSlot"></div>`;
+  renderGap();
+  renderTicket();
+  const tl = $("[data-tl-ask]");
+  if (tl) tl.addEventListener("click", () => { openGapDraft(); $("#gapPanel").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); });
+  if (animate) stream($("#lead"), leadText(), id, 16);
+}
+
+function leadText() {
+  return S.closed
+    ? "Bluewater runs a customized payout flow: weekly batch payouts, manual approval above $50,000, and a contractual phone call before any failed payout is retried. Every change below now has a reason."
+    : "Bluewater runs a customized payout flow: weekly batch payouts, manual approval above $50,000, and an extra escalation step for failed payouts. Four of the five changes below have a recorded reason. One doesn't, and that's where new owners get caught out.";
+}
+
+function renderGap() {
+  const p = $("#gapPanel");
+  if (S.closed) {
+    p.classList.add("closed");
+    p.innerHTML = `<div class="panel-h"><h2>Gap closed</h2><span class="pill ok">Verified</span></div>
+      <div class="panel-b"><p class="gq">Why was the escalation step added to failed payouts?</p>
+      <div class="reply">${ANSWER}</div>
+      <p class="small">Saved to Bluewater's briefing with Jamie's name and the contract reference, so whoever owns this account next starts with it.</p></div>`;
+    return;
+  }
+  p.innerHTML = `<div class="panel-h"><h2>1 gap Synaptiq found</h2><span class="pill gap">Undocumented</span></div>
+    <div class="panel-b">
+      <p class="gq">Why was the escalation step added to failed payouts?</p>
+      <p class="small">PR #311 has no description, no linked ticket, and no Slack discussion. Synaptiq flagged it before you needed it.</p>
+      <div class="person"><span class="avatar av-2 online">JO</span><div><strong>Jamie Ortiz is most likely to know</strong><span>Wrote PR #311 and made 4 of the last 6 changes</span></div></div>
+      <div id="gapAct">${S.asked ? "" : '<button class="btn primary cue" type="button" data-gap-ask>Ask Jamie</button>'}</div>
+    </div>`;
+  const b = $("[data-gap-ask]", p);
+  if (b) b.addEventListener("click", openGapDraft);
+}
+
+function openGapDraft() {
+  $("#gapAct").innerHTML = `<div class="draft reveal">
+    <label class="label small" for="toJamie">Message to Jamie (Synaptiq attaches PR #311 and the briefing)</label>
+    <textarea id="toJamie">Hi Jamie, I've taken over Bluewater. Why was the escalation step added to failed payouts in March (PR #311)? Is it still needed?</textarea>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" data-gap-send>Send to Jamie</button><button class="btn quiet" type="button" data-gap-cancel>Cancel</button></div></div>`;
+  $("[data-gap-send]").addEventListener("click", sendGap);
+  $("[data-gap-cancel]").addEventListener("click", renderGap);
+}
+
+async function sendGap() {
+  const id = RUN;
+  S.asked = true;
+  const tlb = $("[data-tl-ask]");
+  if (tlb) tlb.remove();
+  toast("Sent to Jamie Ortiz with PR #311 attached.");
+  $("#gapAct").innerHTML = `<div class="waiting reveal"><span class="spin"></span><span>Waiting for Jamie. He usually answers the same day.</span><button class="btn" type="button" data-skip>Skip ahead to his reply</button></div>`;
+  let skipped = false;
+  $("[data-skip]").addEventListener("click", () => { skipped = true; });
+  for (let i = 0; i < 70 && !skipped; i++) { await wait(100); if (!alive(id)) return; }
+  if (!alive(id)) return;
+  S.closed = true;
+  $("#gapCount").textContent = "0";
+  steps.complete(1);
+  renderAccount(false);
+  const li = $('[data-ev="2"]');
+  if (li) li.classList.add("flash");
+  toast("Jamie answered. The briefing now explains every change.");
+  if (S.decided) { S.decided = null; renderTicket(); }
+}
+
+function renderTicket() {
+  const p = $("#ticketPanel");
+  const v = verdict();
+  p.innerHTML = `<div class="panel-h"><h2>Your first ticket</h2></div>
+    <div class="panel-b">
+      <div class="ticket"><span class="id">BLU-112 · from Bluewater</span><strong>"Can you simplify failed payouts by removing the extra escalation step?"</strong></div>
+      <p class="small">Using only the briefing, what do you do?</p>
+      <div class="choices">
+        <button type="button" data-decide="remove" aria-pressed="${S.decided === "remove"}">Remove the step</button>
+        <button type="button" data-decide="keep" aria-pressed="${S.decided === "keep"}">Keep it and explain why</button>
+      </div>
+      ${v}
+    </div>`;
+  $$("[data-decide]", p).forEach((b) => b.addEventListener("click", () => decide(b.dataset.decide)));
+}
+
+function verdict() {
+  if (!S.decided) return "";
+  if (!S.closed) {
+    return S.decided === "remove"
+      ? '<div class="verdict warn reveal" role="status"><b>Not yet.</b>The briefing flagged this step as undocumented, so nobody knows what removing it would break. Close the gap first.</div>'
+      : '<div class="verdict warn reveal" role="status"><b>Good instinct, but you can\'t explain why yet.</b>The briefing shows this step has no recorded reason. Close the gap to find out.</div>';
+  }
+  return S.decided === "remove"
+    ? '<div class="verdict bad reveal" role="status"><b>That would break Bluewater\'s contract.</b>Jamie\'s answer is now in the briefing: MSA §7.2 requires a phone call before any failed payout is retried.</div>'
+    : '<div class="verdict good reveal" role="status"><b>Right call.</b>You can reply to Bluewater with the reason from their own contract (MSA §7.2), without searching through tickets or waiting on anyone.</div>';
+}
+
+function decide(choice) {
+  S.decided = choice;
+  renderTicket();
+  if (S.closed && choice === "keep" && steps.step === 2) {
+    steps.complete(2);
+    $("#recapSlot").innerHTML = `<section class="recap reveal"><h2>You knew the account before you had to ask</h2>
+      <p>The briefing showed what changed, why, and who worked on it, and it flagged the one decision nobody had written down. Jamie answered once, and that answer now sits in the briefing for whoever owns Bluewater next.</p></section>`;
+    $("#recapSlot").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "nearest" });
+  }
+}
+
+init();
+</script>

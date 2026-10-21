@@ -1,0 +1,416 @@
+<title>Synaptiq Expert Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..700&display=swap">
+<style>
+/*SHARED_CSS*/
+/* Version B: inbox list + detail, with a running impact ledger */
+.work-inner { max-width: 1120px; }
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.top h1 { font-size: clamp(24px, 3.4vw, 30px); }
+.top p { color: var(--muted); max-width: 56ch; margin-top: 4px; font-size: 14.5px; }
+.tabs { display: inline-flex; gap: 2px; background: var(--sunk); padding: 3px; border-radius: 9px; }
+.tabs button { border: 0; background: transparent; padding: 6px 14px; border-radius: 7px; font-size: 14px; color: var(--muted); font-weight: 600; transition: background .2s, color .2s, box-shadow .25s; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.ledger { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); margin-bottom: 18px; overflow: hidden; }
+.ledger div { position: relative; transition: background .25s; }
+.ledger div:hover { background: var(--paper); }
+.ledger div::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: 0; height: 2px; background: var(--brand); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+.ledger div:hover::after { transform: scaleX(1); }
+.ledger div { padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ledger div + div { border-left: 1px solid var(--line); }
+.ledger b { font: 650 26px/1.1 var(--f-display); font-variant-numeric: tabular-nums; transition: color .4s; display: inline-block; }
+.ledger b.bump { color: var(--brand); animation: bump .6s var(--spring); }
+.ledger span { font-size: 13px; color: var(--muted); }
+.panes { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+.list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.list-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.item { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 12px 14px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); width: 100%; position: relative; overflow: hidden; transition: background .2s, padding .3s var(--ease), height .38s var(--ease), opacity .3s; }
+.item:last-child { border-bottom: 0; }
+.item::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--brand); transform: scaleY(0); transition: transform .3s var(--ease); }
+.item:hover { background: var(--paper); padding-left: 18px; }
+.item:hover::before { transform: scaleY(.5); }
+.item[aria-current="true"] { background: var(--brand-weak); padding-left: 18px; }
+.item[aria-current="true"]::before { transform: scaleY(1); }
+.item .q { font-weight: 600; font-size: 14.5px; line-height: 1.35; }
+.item .meta { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.item.out { opacity: 0; padding-top: 0; padding-bottom: 0; border-bottom-width: 0; }
+.stack { display: inline-flex; }
+.stack .avatar { width: 22px; height: 22px; font-size: 9.5px; border: 2px solid var(--surface); margin-left: -6px; }
+.stack .avatar:first-child { margin-left: 0; }
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); min-width: 0; }
+.detail.swap > * { animation: reveal .4s var(--ease) both; }
+.detail.swap > .d-body { animation-delay: .06s; }
+.d-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.d-head h2 { font-size: 21px; line-height: 1.2; }
+.d-sub { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+.d-body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+.label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.answer { font-size: 15px; line-height: 1.55; padding: 14px 16px; border-radius: var(--r-md); background: var(--paper); border: 1px solid var(--line); }
+.answer mark { background: var(--gap-weak); color: var(--gap); border-radius: 4px; padding: 0 4px; font-weight: 600; }
+.note { font-size: 13.5px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+.note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; color: var(--brand); }
+.riskbox { background: var(--risk-weak); border-radius: var(--r-md); padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.riskbox b { color: var(--risk); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field select, .field textarea, .field input, .set select { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-sm); padding: 8px 10px; font-size: 14px; transition: border-color .2s, box-shadow .25s; }
+.field select:hover, .field textarea:hover, .set select:hover { border-color: var(--line-strong); }
+.field select:focus, .field textarea:focus, .set select:focus, textarea.answer:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
+.field textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.seg label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; cursor: pointer; transition: border-color .2s, background .2s; }
+.seg label:hover { border-color: var(--line-strong); }
+.seg input { accent-color: var(--brand); }
+.seg label:has(input:checked) { border-color: var(--brand); background: var(--brand-weak); }
+.suggest-chip { align-self: flex-start; border: 1px dashed var(--brand); background: var(--brand-weak); color: var(--brand); border-radius: var(--r-sm); padding: 6px 10px; font-size: 13.5px; font-weight: 600; text-align: left; transition: background .2s, border-style .2s, transform .25s var(--ease); }
+.suggest-chip:hover { border-style: solid; transform: translateY(-1px); }
+.alt { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color .2s, background .2s, transform .3s var(--ease); animation: rise .4s var(--ease) both; }
+.alt + .alt { animation-delay: .08s; }
+.alt:hover { border-color: var(--brand); background: color-mix(in srgb, var(--brand-weak) 45%, transparent); transform: translateX(3px); }
+.alt div { flex: 1 1 200px; min-width: 0; font-size: 14px; line-height: 1.4; }
+.alt span { color: var(--muted); font-size: 13px; }
+.done-state { padding: 40px 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.done-state h2 { font-size: 24px; }
+.done-state p { color: var(--muted); max-width: 52ch; }
+.big-check { width: 56px; height: 56px; border-radius: 50%; background: var(--brand-weak); color: var(--brand); display: grid; place-items: center; animation: pop .55s var(--spring) both; box-shadow: 0 0 0 8px color-mix(in srgb, var(--brand-weak) 50%, transparent); }
+.big-check path { stroke-dasharray: 22; stroke-dashoffset: 22; animation: draw .5s .25s var(--ease) forwards; }
+.big-check svg { width: 26px; height: 26px; }
+.settings { display: flex; flex-direction: column; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); max-width: 760px; }
+.set { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); transition: background .2s; animation: rise .45s var(--ease) both; }
+.set:hover { background: var(--paper); }
+.set:nth-child(2) { animation-delay: .05s; } .set:nth-child(3) { animation-delay: .1s; } .set:nth-child(4) { animation-delay: .15s; }
+.set:last-child { border-bottom: 0; }
+.set h3 { font-size: 15.5px; font-family: var(--f-ui); font-weight: 650; }
+.set p { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+.set.wide { grid-template-columns: minmax(0, 1fr); }
+.topics { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.topic { display: inline-flex; align-items: center; gap: 6px; background: var(--risk-weak); color: var(--risk); border-radius: 999px; padding: 4px 6px 4px 11px; font-size: 13.5px; font-weight: 600; animation: pop .35s var(--spring) both; }
+.topic button { border: 0; background: transparent; color: inherit; width: 20px; height: 20px; border-radius: 50%; line-height: 1; font-size: 15px; }
+.topic button:hover { background: color-mix(in srgb, var(--risk) 15%, transparent); }
+.topics input { border: 1px dashed var(--line-strong); background: transparent; border-radius: 999px; padding: 4px 12px; font-size: 13.5px; width: 150px; transition: border-color .2s, width .3s var(--ease); }
+.topics input:focus { outline: none; border-style: solid; border-color: var(--brand); width: 190px; }
+.switch { position: relative; width: 42px; height: 24px; flex: none; }
+.switch input { opacity: 0; width: 100%; height: 100%; position: absolute; margin: 0; cursor: pointer; z-index: 1; }
+.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--line); transition: background .2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .35s var(--spring); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.switch input:checked + span { background: var(--brand); }
+.switch input:checked + span::after { transform: translateX(18px); }
+.switch input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (max-width: 960px) {
+  .panes { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .ledger b { font-size: 20px; }
+  .ledger div { padding: 10px 12px; }
+  .d-head, .d-body { padding-left: 14px; padding-right: 14px; }
+  .set { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <a class="brand" id="brand" href="{{HOME}}" aria-label="Synaptiq, all versions"></a>
+    <div class="workspace"><div class="ws-logo">C</div><div class="ws-meta"><strong>Corvex Payments</strong><span>Engineering workspace</span></div></div>
+    <nav class="nav" aria-label="Synaptiq">
+      <a class="on" href="#inbox" onclick="return false">Expert inbox <span class="count" id="navCount">4</span></a>
+      <a href="#answered" onclick="return false">My answers <span class="count" id="navAnswered">37</span></a>
+      <a href="#ask" onclick="return false">Ask</a>
+    </nav>
+    <section class="try" id="try" aria-label="Demo steps"></section>
+    <div class="rail-foot">
+      <span>Version B of 3</span>
+      <a href="{{HOME}}">All three versions</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="scenario">
+      <div class="who" aria-hidden="true">MC</div>
+      <p><b>You're Maria Chen, the staff engineer everyone asks about payments.</b> Instead of DMs, today's questions arrive here with a drafted answer and the evidence behind it.</p>
+      <button class="restart" id="restart" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Restart demo</button>
+    </div>
+    <div class="work" id="work"><div class="work-inner">
+      <div class="top">
+        <div><h1 id="pageTitle">Your inbox</h1><p id="pageSub">Questions company memory couldn't answer. Each one arrives with a draft and the evidence Synaptiq found, so a reply takes seconds.</p></div>
+        <div class="tabs" role="tablist" aria-label="View">
+          <button role="tab" type="button" data-tab="inbox" aria-selected="true">Inbox</button>
+          <button role="tab" type="button" data-tab="settings" aria-selected="false">Settings</button>
+        </div>
+      </div>
+      <div id="view"></div>
+    </div></div>
+  </div>
+</div>
+
+<script>
+//SHARED_JS
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5" stroke-linecap="round"/></svg>';
+$("#brand").innerHTML = LOGO + "<b>Synaptiq</b>";
+
+const ITEMS = [
+  { key: "flag", q: "Why is the fast-settle flag on in staging?", askers: [["LB", 1], ["TA", 2], ["RM", 4]], who: "Lena Brooks, Tom Ahn, Ravi Menon and 2 others", n: 5, when: "This week", pill: '<span class="pill ok">Draft ready</span>' },
+  { key: "retry", q: "Why does payments-retry only retry 3 times?", askers: [["SO", 3]], who: "Sam Okafor, backend engineer, 3 weeks in", n: 1, when: "Today, 10:14", pill: '<span class="pill gap">Needs your input</span>' },
+  { key: "delete", q: "Can I delete duplicate settlement records directly in the database?", askers: [["TA", 2]], who: "Tom Ahn, payments engineer", n: 1, when: "Today, 11:02", pill: '<span class="pill risk">High-risk</span>' },
+  { key: "notme", q: "How do I rotate the webhook signing keys?", askers: [["RM", 4]], who: "Ravi Menon, integrations", n: 1, when: "Today, 11:40", pill: '<span class="pill plain">Routed by code ownership</span>' },
+];
+let S, steps;
+
+function init() {
+  RUN++;
+  S = { tab: "inbox", sel: "flag", done: new Set(), avoided: 3, reused: 14, minutes: 4, answered: 37, editing: false, personal: false, notme: false,
+        limit: "5", delivery: "now", topics: ["settlement records", "ledger balances", "refund reversals"], reuse: true, swap: true, own: false,
+        shown: { avoided: 3, reused: 14, minutes: 4 } };
+  steps = Checklist($("#try"), ["Confirm a drafted answer in one click", "Fill in a draft that needs your input", "Handle the high-risk question yourself"]);
+  render();
+  $("#work").scrollTop = 0;
+}
+
+function setTab(t) {
+  S.tab = t;
+  $$(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t)));
+  render();
+}
+$$(".tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+$("#restart").addEventListener("click", init);
+
+function openItems() { return ITEMS.filter((i) => !S.done.has(i.key)); }
+
+function render() {
+  $("#navCount").textContent = openItems().length;
+  $("#navAnswered").textContent = S.answered;
+  if (S.tab === "settings") { $("#pageTitle").textContent = "How Synaptiq asks you"; $("#pageSub").textContent = "You decide how often you're asked, when, and which topics always need you personally."; renderSettings(); return; }
+  $("#pageTitle").textContent = "Your inbox";
+  $("#pageSub").textContent = "Questions company memory couldn't answer. Each one arrives with a draft and the evidence Synaptiq found, so a reply takes seconds.";
+  const items = openItems();
+  const ledger = `
+    <section class="ledger" aria-label="This week">
+      <div><b id="lAvoid">${S.shown.avoided}</b><span>interruptions avoided this week</span></div>
+      <div><b id="lReuse">${S.shown.reused}</b><span>times your answers were reused</span></div>
+      <div><b id="lMin">${S.shown.minutes} min</b><span>your time spent here this week</span></div>
+    </section>`;
+  if (!items.length) {
+    $("#view").innerHTML = ledger + `
+      <div class="detail done-state reveal">
+        <div class="big-check">${CHECK}</div>
+        <h2>Inbox clear</h2>
+        <p>Four questions handled in a couple of minutes, without a single DM. Routine answers now live in company memory, the risky one stayed with you, and the misrouted one went to the right person.</p>
+        <button class="btn" type="button" id="again">Restart demo</button>
+      </div>`;
+    $("#again").addEventListener("click", init);
+    syncLedger();
+    return;
+  }
+  if (!items.find((i) => i.key === S.sel)) S.sel = items[0].key;
+  $("#view").innerHTML = ledger + `
+    <div class="panes">
+      <section class="list" aria-label="Questions">
+        <div class="list-head"><span>${items.length} waiting</span><span>Limit: ${S.limit} a day</span></div>
+        ${items.map((i) => `
+          <button class="item" type="button" data-open="${i.key}" aria-current="${i.key === S.sel}">
+            <span class="q">${i.q}</span>
+            <span class="meta"><span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>${i.n > 1 ? i.n + " people asked" : i.when}</span>${i.pill}</span>
+          </button>`).join("")}
+      </section>
+      <section class="detail" id="detail" aria-live="polite"></section>
+    </div>`;
+  $$("[data-open]").forEach((b) => b.addEventListener("click", () => { if (S.sel === b.dataset.open) return; S.sel = b.dataset.open; S.editing = S.personal = S.notme = S.own = false; S.swap = true; render(); if (window.innerWidth < 960) $("#detail").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); }));
+  renderDetail();
+  syncLedger();
+}
+
+function syncLedger() {
+  countTo($("#lAvoid"), S.avoided);
+  countTo($("#lReuse"), S.reused);
+  countTo($("#lMin"), S.minutes, " min");
+  S.shown = { avoided: S.avoided, reused: S.reused, minutes: S.minutes };
+}
+
+function head(i) {
+  return `<div class="d-head"><div class="row" style="display:flex;gap:8px;flex-wrap:wrap">${i.pill}</div><h2>${i.q}</h2>
+    <div class="d-sub"><span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>Asked by ${i.who}</span><span>${i.when}</span></div></div>`;
+}
+
+function renderDetail() {
+  const i = ITEMS.find((x) => x.key === S.sel);
+  const d = $("#detail");
+  d.classList.toggle("swap", S.swap);
+  S.swap = false;
+  if (i.key === "flag") {
+    d.innerHTML = head(i) + `
+      <div class="d-body">
+        <div class="field"><span class="label">Drafted from your own pull request</span>
+          <div class="answer">Fast-settle is on in staging so the Q3 load test can run settlement in minutes instead of overnight. It's on in staging only; production is unaffected. It will be turned off when the load test ends on November 14.</div></div>
+        <div><p class="label">Evidence</p><ul class="trail" style="margin-top:8px">
+          <li><span class="node"></span><span><b>PR #482:</b> "Enable fast-settle in staging for Q3 load test"<br><span class="k">You, September 29</span></span></li>
+          <li><span class="node"></span><span><b>Flag change log:</b> fast-settle = on (staging)<br><span class="k">September 30, 09:12</span></span></li>
+        </ul></div>
+        <div class="meta-grid">
+          <div class="field"><span class="label">Applies to</span><span>Staging only</span></div>
+          <div class="field"><span class="label">Valid until</span><span>November 14 (flag turns off)</span></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary cue" type="button" data-confirm>${CHECK}Confirm and publish</button>
+          <button class="btn" type="button" data-edit-flag>Edit</button>
+          <button class="btn quiet" type="button" data-notme-flag>Not me</button>
+        </div>
+        <p class="note">${INFO}<span>Publishing answers all 5 people now, and anyone who asks later gets this answer without reaching you.</span></p>
+      </div>`;
+    $("[data-confirm]", d).addEventListener("click", () => finish("flag", 5, "Published. 5 people got their answer, and the next person who asks won't need you.", 0));
+    $("[data-edit-flag]", d).addEventListener("click", () => {
+      const a = $(".answer", d);
+      a.outerHTML = `<textarea class="answer" id="flagEdit" style="width:100%;min-height:110px;font:inherit;resize:vertical">${a.textContent.trim()}</textarea>`;
+      $("[data-edit-flag]", d).remove();
+    });
+    $("[data-notme-flag]", d).addEventListener("click", () => toast("This came from your own PR, so Synaptiq is fairly sure it's yours. Try the webhook question to see redirecting."));
+  }
+  if (i.key === "retry") {
+    d.innerHTML = head(i) + `
+      <div class="d-body">
+        <div class="field"><span class="label">Synaptiq's draft has one gap</span>
+          <div class="answer">The 3-retry limit protects a downstream system from overload: <mark>which system, and why 3?</mark> Keep the limit in place until that system can handle more retries.</div></div>
+        <div><p class="label">Evidence</p><ul class="trail" style="margin-top:8px">
+          <li><span class="node"></span><span><b>Commit a41f9c2:</b> "adjust retries"<br><span class="k">You, March 2023: set <code>RETRY_LIMIT = 3</code></span></span></li>
+          <li><span class="node miss"></span><span><b>PAY-1182</b> mentions "downstream load"<br><span class="k">No decision recorded</span></span></li>
+        </ul></div>
+        <div class="actions" ${S.editing ? "hidden" : ""}>
+          <button class="btn primary cue" type="button" data-fill>Fill in the gap</button>
+          <button class="btn quiet" type="button" data-notme-retry>Not me</button>
+        </div>
+        <div class="field" ${S.editing ? "" : "hidden"} data-editor>
+          <label class="label" for="retryEdit">Your answer (Synaptiq keeps your wording)</label>
+          <textarea id="retryEdit">The 3-retry limit protects </textarea>
+          <button class="suggest-chip" type="button" data-suggest>Use Synaptiq's best guess: "ledger-gw v1, which drops requests above 3 burst retries"</button>
+          <div class="meta-grid">
+            <div class="field"><span class="label">Applies to</span><div class="seg"><label><input type="radio" name="scope" checked> payments-retry only</label><label><input type="radio" name="scope"> All payment services</label></div></div>
+            <div class="field"><label class="label" for="review">Ask me to review it again in</label><select id="review"><option>3 months</option><option selected>6 months</option><option>12 months</option></select></div>
+          </div>
+          <div class="actions"><button class="btn primary" type="button" data-publish>${CHECK}Publish answer</button></div>
+        </div>
+        <p class="note">${INFO}<span>Sam is blocked on a change to payments-retry. He'll be notified the moment you publish.</span></p>
+      </div>`;
+    $("[data-fill]", d).addEventListener("click", () => { S.editing = true; renderDetail(); const t = $("#retryEdit"); t.focus(); t.setSelectionRange(t.value.length, t.value.length); });
+    $("[data-notme-retry]", d).addEventListener("click", () => toast("You made this change in 2023, so you're the best person to answer. Try the webhook question to see redirecting."));
+    $("[data-suggest]", d).addEventListener("click", () => {
+      $("#retryEdit").value = "The 3-retry limit protects ledger-gw v1, our legacy settlement gateway. It drops requests when a transaction is retried more than 3 times in a burst. Keep it at 3 until the ledger-gw v2 migration (PAY-1410) ships.";
+    });
+    $("[data-publish]", d).addEventListener("click", () => {
+      const v = $("#retryEdit").value.trim();
+      if (v.length < 40) { toast("Add the missing reason before publishing, or use Synaptiq's best guess."); $("#retryEdit").focus(); return; }
+      finish("retry", 1, "Published. Sam was notified and is unblocked. The answer is saved with its scope and review date.", 1);
+    });
+  }
+  if (i.key === "delete") {
+    d.innerHTML = head(i) + `
+      <div class="d-body">
+        <div class="riskbox"><b>Synaptiq won't draft or reuse an answer for this.</b><span>It touches settlement records, one of your "always ask me" topics. Your reply goes only to Tom and is not saved to company memory.</span></div>
+        <div><p class="label">Context Synaptiq gathered for you</p><ul class="trail" style="margin-top:8px">
+          <li><span class="node"></span><span><b>Tom is working on PAY-1502</b><br><span class="k">Duplicate settlements from the October 18 incident</span></span></li>
+          <li><span class="node"></span><span><b>14 duplicate records</b> found by Tom's query<br><span class="k">Total value: $38,420</span></span></li>
+          <li><span class="node"></span><span><b>Runbook: Settlement corrections</b><br><span class="k">Requires finance sign-off before any change</span></span></li>
+        </ul></div>
+        <div class="actions" ${S.personal ? "hidden" : ""}>
+          <button class="btn primary cue" type="button" data-personal>Reply to Tom personally</button>
+          <button class="btn" type="button" data-book>Book 15 minutes with Tom</button>
+        </div>
+        <div class="field" ${S.personal ? "" : "hidden"} data-reply-box>
+          <label class="label" for="replyTom">Reply to Tom (private)</label>
+          <textarea id="replyTom">Please don't delete them directly. Use the settlement-correction job from the runbook so the ledger stays balanced, and get finance sign-off first. Happy to pair on it this afternoon.</textarea>
+          <div class="actions"><button class="btn primary" type="button" data-reply>Send to Tom</button></div>
+        </div>
+      </div>`;
+    $("[data-personal]", d).addEventListener("click", () => { S.personal = true; renderDetail(); $("#replyTom").focus(); });
+    $("[data-book]", d).addEventListener("click", () => finish("delete", 0, "Booked 15 minutes with Tom today at 3:30 pm. Nothing was saved to company memory.", 2, 1));
+    $("[data-reply]", d).addEventListener("click", () => finish("delete", 0, "Sent to Tom only. High-risk answers are never saved or reused automatically.", 2, 1));
+  }
+  if (i.key === "notme") {
+    d.innerHTML = head(i) + `
+      <div class="d-body">
+        <p class="note">${INFO}<span>Synaptiq routed this to you because you reviewed the last change to <code>webhook-gateway</code>. It has no draft yet.</span></p>
+        <div class="actions" ${S.notme || S.own ? "hidden" : ""}>
+          <button class="btn" type="button" data-answer-hooks>Answer it myself</button>
+          <button class="btn primary cue" type="button" data-notme>Not me</button>
+        </div>
+        <div class="field" ${S.own ? "" : "hidden"}>
+          <label class="label" for="hooksAnswer">Your answer</label>
+          <textarea id="hooksAnswer" placeholder="Explain how to rotate the webhook signing keys"></textarea>
+          <div class="actions"><button class="btn primary" type="button" data-hooks-publish>Publish answer</button><button class="btn quiet" type="button" data-hooks-cancel>Cancel</button></div>
+        </div>
+        <div ${S.notme ? "" : "hidden"} class="field">
+          <span class="label">Better people to ask</span>
+          <div class="alt"><span class="avatar av-5">DP</span><div><strong>Dev Patel</strong><br><span>Owns webhook-gateway. Made 12 of the last 15 changes, including the key-rotation script.</span></div><button class="btn primary" type="button" data-redirect>Redirect to Dev</button></div>
+          <div class="alt"><span class="avatar av-4">KS</span><div><strong>Kim Sato</strong><br><span>Security team. Approves key rotations.</span></div><button class="btn" type="button" data-redirect-kim>Redirect to Kim</button></div>
+        </div>
+      </div>`;
+    $("[data-notme]", d).addEventListener("click", () => { S.notme = true; renderDetail(); });
+    $("[data-answer-hooks]", d).addEventListener("click", () => { S.own = true; renderDetail(); $("#hooksAnswer").focus(); });
+    $("[data-hooks-cancel]", d).addEventListener("click", () => { S.own = false; renderDetail(); });
+    $("[data-hooks-publish]", d).addEventListener("click", () => {
+      if ($("#hooksAnswer").value.trim().length < 20) { toast("Write a short answer before publishing."); $("#hooksAnswer").focus(); return; }
+      finish("notme", 1, "Published. Ravi was notified, and the answer is saved with your name on it.", -1);
+    });
+    $("[data-redirect]", d).addEventListener("click", () => finish("notme", 0, "Redirected to Dev Patel with the context. Synaptiq learned webhook keys aren't your area.", -1));
+    $("[data-redirect-kim]", d).addEventListener("click", () => finish("notme", 0, "Redirected to Kim Sato with the context. Synaptiq learned webhook keys aren't your area.", -1));
+  }
+}
+
+async function finish(key, avoided, msg, step, mins = 0) {
+  const id = RUN;
+  if (S.fin) return;
+  S.fin = true;
+  const row = $(`[data-open="${key}"]`);
+  if (row) { row.style.height = row.offsetHeight + "px"; row.offsetHeight; row.classList.add("out"); row.style.height = "0px"; }
+  S.avoided += avoided;
+  if (key === "flag" || key === "retry") { S.answered += 1; S.reused += avoided; }
+  S.minutes += mins;
+  toast(msg);
+  if (step >= 0) steps.complete(step);
+  await wait(450);
+  if (!alive(id)) return;
+  S.done.add(key);
+  S.editing = S.personal = S.notme = S.own = false;
+  const next = openItems()[0];
+  if (next) S.sel = next.key;
+  S.swap = true;
+  S.fin = false;
+  render();
+}
+
+function renderSettings() {
+  $("#view").innerHTML = `
+    <section class="settings reveal">
+      <div class="set">
+        <div><h3>Daily limit</h3><p>Synaptiq won't ask you more than this. Extra questions wait for tomorrow or go to someone else who knows.</p></div>
+        <select id="limit" aria-label="Daily limit">${["3", "5", "8"].map((v) => `<option value="${v}" ${S.limit === v ? "selected" : ""}>${v} a day</option>`).join("")}</select>
+      </div>
+      <div class="set">
+        <div><h3>When to deliver</h3><p>Batch non-urgent questions so they don't break your focus.</p></div>
+        <div class="seg"><label><input type="radio" name="del" value="now" ${S.delivery === "now" ? "checked" : ""}> As they come</label><label><input type="radio" name="del" value="digest" ${S.delivery === "digest" ? "checked" : ""}> One digest at 4:30 pm</label></div>
+      </div>
+      <div class="set">
+        <div><h3>Reuse my confirmed answers</h3><p>Answer routine questions from what you've already confirmed, with your name and the review date shown.</p></div>
+        <label class="switch"><input type="checkbox" id="reuse" ${S.reuse ? "checked" : ""} aria-label="Reuse my confirmed answers"><span></span></label>
+      </div>
+      <div class="set wide">
+        <div><h3>Always ask me personally</h3><p>Questions on these topics are never drafted, published or reused. They come straight to you.</p></div>
+        <div class="topics" id="topics">${S.topics.map((t, i) => `<span class="topic">${esc(t)}<button type="button" aria-label="Remove ${esc(t)}" data-rm="${i}">×</button></span>`).join("")}
+          <input id="newTopic" placeholder="Add a topic" aria-label="Add a topic"></div>
+      </div>
+    </section>`;
+  $("#limit").addEventListener("change", (e) => { S.limit = e.target.value; toast(`Saved. Synaptiq will ask you at most ${S.limit} times a day.`); });
+  $$("input[name=del]").forEach((r) => r.addEventListener("change", (e) => { S.delivery = e.target.value; toast(S.delivery === "digest" ? "Saved. Non-urgent questions arrive in one digest at 4:30 pm." : "Saved. Questions arrive as they come."); }));
+  $("#reuse").addEventListener("change", (e) => { S.reuse = e.target.checked; toast(S.reuse ? "Saved. Routine questions are answered from your confirmed answers." : "Saved. Every question will come to you."); });
+  $$("[data-rm]").forEach((b) => b.addEventListener("click", () => { const t = S.topics.splice(+b.dataset.rm, 1)[0]; renderSettings(); toast(`Removed "${esc(t)}".`); }));
+  $("#newTopic").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const v = e.target.value.trim();
+    if (!v) return;
+    S.topics.push(v); renderSettings(); $("#newTopic").focus(); toast(`Added "${esc(v)}". Questions about it will always come to you.`);
+  });
+}
+
+init();
+</script>

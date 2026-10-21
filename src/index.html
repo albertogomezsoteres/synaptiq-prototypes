@@ -1,0 +1,171 @@
+<title>Synaptiq Prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..700&display=swap">
+<style>
+/*SHARED_CSS*/
+/* Hub: thesis and live loop diagram, then the three versions as comparable rows */
+html, body { height: auto; }
+.page {
+  max-width: 1100px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 40px;
+}
+.hdr { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; animation: rise .5s var(--ease) both; }
+.hdr .meta { font-size: 13.5px; color: var(--muted); }
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.hero-copy { display: flex; flex-direction: column; gap: 18px; }
+.hero h1 { font-size: clamp(36px, 5.6vw, 62px); line-height: 1; letter-spacing: -.03em; animation: rise .7s .05s var(--ease) both; }
+.hero p { color: var(--muted); font-size: 16.5px; line-height: 1.55; max-width: 46ch; animation: rise .7s .15s var(--ease) both; }
+.loop-fig { margin: 0; animation: fade .9s .2s var(--ease) both; }
+.loop-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
+.loop-fig .track { fill: none; stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 3 6; }
+.loop-fig .arc { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 90 538; stroke-dashoffset: 90; animation: orbit 8s linear infinite; }
+@keyframes orbit { from { stroke-dashoffset: 90; } to { stroke-dashoffset: -538; } }
+.loop-fig .st circle.ring { fill: var(--surface); stroke: var(--brand); stroke-width: 2; }
+.loop-fig .st circle.core { fill: var(--brand); }
+.loop-fig .st.gap circle.ring { stroke: var(--gap); stroke-dasharray: 3 3; }
+.loop-fig .st.gap circle.core { fill: var(--gap); }
+.loop-fig text { font-family: var(--f-ui); font-size: 15px; font-weight: 650; fill: var(--ink); }
+.loop-fig text.sub { font-size: 12.5px; font-weight: 400; fill: var(--muted); }
+.loop-fig .center-name { font-family: var(--f-display); font-size: 21px; font-weight: 700; fill: var(--ink); letter-spacing: -.02em; }
+.loop-fig .center-sub { font-size: 12.5px; font-weight: 400; fill: var(--muted); }
+.loop-fig .pulse { fill: var(--brand); }
+.loop-fig .halo { fill: var(--brand); opacity: .18; }
+
+.versions { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.v {
+  position: relative; display: grid; grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1.3fr) auto; gap: 24px;
+  padding: 26px 16px 26px 12px; border-bottom: 1px solid var(--line); align-items: start; isolation: isolate;
+  animation: rise .6s var(--ease) both;
+}
+.v:nth-child(1) { animation-delay: .25s; } .v:nth-child(2) { animation-delay: .33s; } .v:nth-child(3) { animation-delay: .41s; }
+.v::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--surface); transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease); }
+.v:hover::before { transform: scaleX(1); }
+.v .letter { font: 700 68px/0.88 var(--f-display); color: var(--brand); letter-spacing: -.04em; transition: transform .45s var(--spring), color .3s; }
+.v:hover .letter { transform: translateX(6px); color: var(--brand-deep); }
+.v h2 { font-size: 23px; line-height: 1.15; }
+.v .approach { margin-top: 6px; font-size: 14.5px; color: var(--muted); }
+.v .persona { margin-top: 14px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; }
+.v .persona .avatar { width: 30px; height: 30px; font-size: 11px; }
+.v .persona b { display: block; font-size: 14px; }
+.v .persona span span { color: var(--muted); }
+.hyp { font-size: 15px; line-height: 1.55; }
+.hyp .k { font-size: 12.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
+.hyp .signal { display: block; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.hyp .signal b { color: var(--ink); font-weight: 600; }
+.v .go { align-self: center; white-space: nowrap; text-decoration: none; }
+.v .go::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.v .go svg { transition: transform .35s var(--spring); }
+.v:hover .go { background: var(--brand-deep); border-color: var(--brand-deep); transform: translateY(-1px); box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--brand) 70%, transparent); }
+.v:hover .go svg { transform: translateX(3px); }
+
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; font-size: 14.5px; color: var(--muted); }
+.how p { padding-top: 14px; border-top: 1px solid var(--line); transition: border-color .3s; }
+.how p:hover { border-color: var(--brand); }
+.how b { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+.foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--faint); }
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .loop-fig { max-width: 460px; }
+  .v { grid-template-columns: 56px minmax(0, 1fr); gap: 14px 16px; padding-left: 4px; padding-right: 4px; }
+  .v .letter { font-size: 48px; }
+  .v .hyp, .v .go { grid-column: 2; }
+  .v .go { justify-self: start; }
+  .how { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+}
+@media (max-width: 560px) {
+  .page { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; gap: 32px; }
+  .v { grid-template-columns: minmax(0, 1fr); }
+  .v .letter { font-size: 42px; }
+  .v .hyp, .v .go { grid-column: 1; }
+}
+</style>
+
+<div class="page">
+  <header class="hdr">
+    <div class="brand" id="brand"></div>
+    <span class="meta">Team Synaptiq, MENG 570</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>No more waiting on the one person who knows.</h1>
+      <p>Engineers can usually find what a system does, but not why it works that way. Synaptiq answers from evidence, admits when the answer is missing, gets it from the right expert once, and keeps it for everyone after.</p>
+    </div>
+    <figure class="loop-fig" aria-label="The Synaptiq loop: spot the gap, find the expert, validate once, reuse">
+      <svg viewBox="0 0 460 330" role="img">
+        <circle class="track" cx="230" cy="160" r="100"/>
+        <circle class="arc" cx="230" cy="160" r="100" transform="rotate(-90 230 160)"/>
+        <path id="orbitPath" d="M230,60 A100,100 0 1,1 229.99,60" fill="none"/>
+        <g class="st gap"><circle class="ring" cx="230" cy="60" r="11"/><circle class="core" cx="230" cy="60" r="4.5"><animate attributeName="r" values="4.5;8;4.5;4.5" keyTimes="0;.06;.16;1" dur="8s" begin="0s" repeatCount="indefinite"/></circle></g>
+        <g class="st"><circle class="ring" cx="330" cy="160" r="11"/><circle class="core" cx="330" cy="160" r="4.5"><animate attributeName="r" values="4.5;8;4.5;4.5" keyTimes="0;.06;.16;1" dur="8s" begin="2s" repeatCount="indefinite"/></circle></g>
+        <g class="st"><circle class="ring" cx="230" cy="260" r="11"/><circle class="core" cx="230" cy="260" r="4.5"><animate attributeName="r" values="4.5;8;4.5;4.5" keyTimes="0;.06;.16;1" dur="8s" begin="4s" repeatCount="indefinite"/></circle></g>
+        <g class="st"><circle class="ring" cx="130" cy="160" r="11"/><circle class="core" cx="130" cy="160" r="4.5"><animate attributeName="r" values="4.5;8;4.5;4.5" keyTimes="0;.06;.16;1" dur="8s" begin="6s" repeatCount="indefinite"/></circle></g>
+        <g><circle class="halo" r="15"/><circle class="pulse" r="5"/><animateMotion dur="8s" repeatCount="indefinite" rotate="0"><mpath href="#orbitPath"/></animateMotion></g>
+        <text x="230" y="24" text-anchor="middle">Spot the gap</text>
+        <text class="sub" x="230" y="40" text-anchor="middle">before it blocks someone</text>
+        <text x="348" y="156">Find the expert</text>
+        <text class="sub" x="348" y="173">from real work</text>
+        <text x="230" y="296" text-anchor="middle">Validate once</text>
+        <text class="sub" x="230" y="313" text-anchor="middle">with owner and review date</text>
+        <text x="110" y="156" text-anchor="end">Reuse</text>
+        <text class="sub" x="110" y="173" text-anchor="end">for the next person</text>
+        <text class="center-name" x="230" y="160" text-anchor="middle">Synaptiq</text>
+        <text class="center-sub" x="230" y="180" text-anchor="middle">company memory</text>
+      </svg>
+    </figure>
+  </section>
+
+  <section class="versions" aria-label="Three versions">
+    <article class="v">
+      <div class="letter" aria-hidden="true">A</div>
+      <div>
+        <h2>Ask Synaptiq</h2>
+        <p class="approach">The engineer asks. Answers carry their evidence, or admit the gap.</p>
+        <div class="persona"><span class="avatar av-3">S</span><span><b>New-to-system engineer</b><span>Sam, three weeks in</span></span></div>
+      </div>
+      <p class="hyp"><span class="k">Hypothesis</span>Engineers will trust and act on answers that show source, owner and review date, and that say "not found" and route the question, more than on a confident chatbot answer.<span class="signal"><b>Validated if</b> testers would act on the answer and see "not found" as helpful.</span></p>
+      <a class="btn primary go" href="{{A}}">Open version A<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </article>
+    <article class="v">
+      <div class="letter" aria-hidden="true">B</div>
+      <div>
+        <h2>Expert Inbox</h2>
+        <p class="approach">The expert contributes. One click turns a draft into a reusable answer.</p>
+        <div class="persona"><span class="avatar av-1">MC</span><span><b>Go-to expert engineer</b><span>Maria, the one everyone asks</span></span></div>
+      </div>
+      <p class="hyp"><span class="k">Hypothesis</span>Experts will capture what they know if each contribution is one click on a drafted answer with its evidence, and they can see the interruptions it saves them.<span class="signal"><b>Validated if</b> testers confirm an answer in under 30 seconds and prefer it to DMs.</span></p>
+      <a class="btn primary go" href="{{B}}">Open version B<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </article>
+    <article class="v">
+      <div class="letter" aria-hidden="true">C</div>
+      <div>
+        <h2>Context Briefing</h2>
+        <p class="approach">Synaptiq goes first. The briefing arrives before anyone asks.</p>
+        <div class="persona"><span class="avatar av-2">N</span><span><b>Deployment engineer</b><span>Nico, new to a customer account</span></span></div>
+      </div>
+      <p class="hyp"><span class="k">Hypothesis</span>Engineers entering unfamiliar work get unblocked faster when Synaptiq shows what changed, why, who worked on it, and what nobody wrote down, before they ask anything.<span class="signal"><b>Validated if</b> testers make the right call on their first ticket without asking anyone.</span></p>
+      <a class="btn primary go" href="{{C}}">Open version C<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </article>
+  </section>
+
+  <section class="how" aria-label="How to try them">
+    <p><b>About two minutes each</b>Follow the "Try this" steps on the left. Every version has a Restart button.</p>
+    <p><b>Same company, same data</b>All three run on one fictional company, Corvex Payments, so the only difference is the approach.</p>
+    <p><b>Then vote</b>Which one would you actually use?</p>
+  </section>
+
+  <footer class="foot">
+    <span>Konur Nordberg, Alberto Gomez, Debshree Chowdhury, Xianyu Wang, Weikai Liao</span>
+    <span>People and companies shown are fictional. The situations come from our customer interviews.</span>
+  </footer>
+</div>
+
+<script>
+//SHARED_JS
+$("#brand").innerHTML = LOGO + "<b>Synaptiq</b>";
+if (REDUCED) { const svg = $(".loop-fig svg"); if (svg && svg.pauseAnimations) svg.pauseAnimations(); }
+</script>
