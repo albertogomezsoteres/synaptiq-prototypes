@@ -4,25 +4,35 @@ Each page in src/ gets the shared stylesheet and script inlined, so every
 page in docs/ is a single self-contained HTML file with no build step needed
 to host it.
 """
+import base64
 import pathlib
 
 ROOT = pathlib.Path(__file__).parent
 SRC = ROOT / "src"
 CSS = (SRC / "shared.css").read_text()
 JS = (SRC / "shared.js").read_text()
+ASSETS = ROOT / "assets"
+
+
+def data_uri(name):
+    return "data:image/png;base64," + base64.b64encode((ASSETS / name).read_bytes()).decode()
+
+
+IMAGES = {"mark": data_uri("mark.png"), "wordmark": data_uri("wordmark.png")}
 
 PAGES = {"index": "index.html", "a": "a.html", "b": "b.html", "c": "c.html"}
 HEAD = (
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
     '<meta name="description" content="Synaptiq: three interactive prototypes for closing knowledge gaps in engineering teams.">\n'
-    '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 28 28%27%3E%3Cpath d=%27M6.5 20.5C10.5 12 17 16.5 21.5 7.5%27 fill=%27none%27 stroke=%27%230a7468%27 stroke-width=%272.4%27 stroke-linecap=%27round%27/%3E%3Ccircle cx=%276.5%27 cy=%2720.5%27 r=%273.8%27 fill=%27%230a7468%27/%3E%3Ccircle cx=%2721.5%27 cy=%277.5%27 r=%273.8%27 fill=%27%230a7468%27/%3E%3C/svg%3E">\n'
+    '<meta name="theme-color" content="#072548">\n'
+    f'<link rel="icon" type="image/png" href="{data_uri("favicon.png")}">\n'
 )
 
 
 def render(text, links):
     text = text.replace("/*SHARED_CSS*/", CSS).replace("//SHARED_JS", JS)
-    for key, val in links.items():
+    for key, val in {**IMAGES, **links}.items():
         text = text.replace("{{" + key.upper() + "}}", val)
     return text
 

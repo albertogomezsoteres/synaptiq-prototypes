@@ -29,7 +29,7 @@
 @keyframes bubble { from { opacity: 0; transform: scale(.92) translateY(6px); } }
 .a { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; }
 .a-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-weak); color: var(--brand); display: grid; place-items: center; animation: pop .4s var(--spring) both; }
-.a-mark svg { width: 18px; height: 18px; }
+.a-mark img { width: 20px; height: 20px; object-fit: contain; }
 .a-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .lead { font-size: 15px; line-height: 1.55; }
 .steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; }
@@ -126,7 +126,7 @@ const IC = {
 };
 let S, steps;
 const thread = $("#thread"), work = $("#work"), chips = $("#chips"), input = $("#askInput");
-$("#brand").innerHTML = LOGO + "<b>Synaptiq</b>";
+$("#brand").innerHTML = BRAND;
 
 function init() {
   RUN++;
