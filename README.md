@@ -39,11 +39,13 @@ All three versions run on the same fictional company (Corvex Payments), with the
 
 ### What we deliberately left out
 
-Real integrations, live AI, login, the manager dashboard and admin settings. Each version tests one idea, end to end, in about two minutes.
+Live Slack/GitHub integrations, login, enterprise permissions and manager analytics remain out of scope. The demo now uses a real Gemini API, a shared SQLite knowledge store, document uploads and expert publishing.
 
 ## Try it
 
-Open the [live site](https://albertogomezsoteres.github.io/synaptiq-prototypes/), pick a version and follow the **Try this** steps on the left. Every version has a **Restart demo** button and works on desktop and mobile, in light and dark mode.
+Open the site and check that the header says **Live AI · shared workspace**. A accepts free-form questions, B handles the actual routed questions, and C generates a briefing from the same current documents. **Restart demo** clears A's conversation only. **Reset shared demo** removes uploaded documents and expert answers for everyone, after confirmation.
+
+Use the files in `demo-files/` for the upload demonstration. They are not included in company knowledge until you upload them. PDF and PNG/JPG/WebP floor plans are passed to Gemini's visual input; text and DOCX files become text sources. Limit: 4 MB per file, 30 sources in the shared classroom workspace.
 
 ## Project structure
 
@@ -63,21 +65,22 @@ tests/qa.py      Browser test that clicks through every flow
 
 ## Development
 
-Plain HTML, CSS and JavaScript: no framework, no backend, no dependencies.
+The frontend is plain HTML, CSS and JavaScript. `server.py` supplies the API and persistent SQLite storage using Python 3.12's standard library. The Gemini API key is read from the server environment, or from an ignored local `.env` file. It is never embedded in the published pages.
 
 ```bash
 python3 build.py                     # rebuild docs/ after editing src/
-python3 -m http.server -d docs 8000  # preview at http://localhost:8000
+python3 server.py                   # full app at http://localhost:8000
 ```
 
-Optional browser tests:
+Backend tests (no API calls or third-party packages):
 
 ```bash
-pip install playwright && playwright install chromium
-python3 tests/qa.py a                # also: b, c, index; add --mobile or --dark
+python3 -m unittest discover -s tests -p test_live.py -v
 ```
 
-**Workflow:** work on `dev`, run `python3 build.py`, open a pull request to `main`. GitHub Pages publishes `main` from `/docs`.
+`tests/qa.py` covers the earlier scripted prototype; its selectors do not apply to the live UI. The live API and shared-state tests are in `tests/test_live.py`.
+
+**Publishing:** GitHub Pages still publishes `main` from `/docs`, but the live API must be hosted separately. Set the public backend URL in `src/config.js`, rebuild, and publish. The connection can also be supplied using **Connect workspace** or an `?api=https://...` query parameter. See [DEPLOYMENT.md](DEPLOYMENT.md) for the hosting checklist and demo script.
 
 ## Team
 

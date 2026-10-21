@@ -9,8 +9,8 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).parent
 SRC = ROOT / "src"
-CSS = (SRC / "shared.css").read_text()
-JS = (SRC / "shared.js").read_text()
+CSS = (SRC / "shared.css").read_text(encoding="utf-8") + "\n" + (SRC / "live.css").read_text(encoding="utf-8")
+JS = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("shared.js", "config.js", "live.js"))
 ASSETS = ROOT / "assets"
 
 
@@ -38,7 +38,7 @@ def render(text, links):
 
 
 def build_page(key, links):
-    src = (SRC / PAGES[key]).read_text()
+    src = (SRC / PAGES[key]).read_text(encoding="utf-8")
     page = render(src, links)
     split = page.index("</style>") + len("</style>")
     return HEAD + page[:split] + "\n</head>\n<body>\n" + page[split:] + "\n</body>\n</html>\n"
@@ -49,5 +49,5 @@ if __name__ == "__main__":
         links = {"home": "./", "a": "a/", "b": "b/", "c": "c/"} if key == "index" else {"home": "../", "a": "../a/", "b": "../b/", "c": "../c/"}
         out = ROOT / "docs" / ("index.html" if key == "index" else f"{key}/index.html")
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(build_page(key, links))
+        out.write_text(build_page(key, links), encoding="utf-8", newline="\n")
         print("built", out.relative_to(ROOT))

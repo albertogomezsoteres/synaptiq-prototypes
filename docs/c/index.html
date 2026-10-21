@@ -303,6 +303,9 @@ p { margin: 0; }
   .work-inner { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 32px; }
 }
 
+.live-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap;font-size:13px}.live-bar .btn{font-size:12px;padding:5px 8px}.live-dialog{width:min(720px,94vw);max-height:85vh;overflow:auto;border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}.live-dialog::backdrop{background:#07254888;backdrop-filter:blur(4px)}.live-dialog-body{display:grid;gap:16px;margin-top:20px}.live-dialog label{display:grid;gap:8px}.live-dialog input,.field input{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:12px;color:var(--ink);font:inherit}.live-document{padding:16px 0;border-top:1px solid var(--line)}.live-document pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:13px;max-height:240px;overflow:auto;padding:12px;background:var(--sunk);border-radius:8px}.live-drop{display:block;border:1px dashed var(--line-strong);padding:12px;border-radius:10px;text-align:center;font-size:13px;cursor:pointer;background:var(--paper);transition:background .15s,border-color .15s}.live-drop span{color:var(--brand);text-decoration:underline}.live-drop.dragging{border-color:var(--brand);background:var(--brand-weak)}.live-drop.uploading{opacity:.6;pointer-events:none}.live-hint{font-size:11px;color:var(--muted);margin-top:4px}.live-upload-inline{max-width:832px;margin:0 auto 8px}.live-error{border-left:3px solid var(--gap);padding:10px 12px;background:var(--gap-weak);border-radius:6px;font-size:14px;overflow-wrap:anywhere}.live-answer{white-space:pre-wrap;overflow-wrap:anywhere}.live-pending{color:var(--muted);padding:14px 0;animation:pulse 1.5s infinite}.live-brief{display:grid;gap:18px;margin-top:24px}.live-brief h3{font-size:15px}.upload-feedback:empty{display:none}.upload-feedback{max-height:95px;overflow:auto;font-size:12px}.live-dialog details{margin-top:8px}.live-dialog summary{cursor:pointer;color:var(--brand)}.a-body .lead{line-height:1.7}.live-bar+.scenario{border-top:0}@media(max-width:700px){.live-bar{padding:8px 12px;gap:6px}.live-bar .row{gap:4px}.live-upload-inline .live-hint{display:none}.composer{padding-top:8px}.live-dialog{padding:16px}.live-bar .btn{font-size:11px}}
+.live-versions{display:flex;gap:12px;font-size:12px;font-weight:600}.live-versions a{color:var(--brand);text-decoration:none}.live-versions a:hover{text-decoration:underline}.try li{display:list-item;margin-left:18px}.try ol{list-style:decimal}.try p{font-size:13px;color:var(--muted);line-height:1.5}@media(max-width:860px){.rail .try{display:none}.live-bar{gap:8px}.live-versions{gap:14px}}
+
 /* Version C: account page where the briefing arrives before any question */
 .work-inner { max-width: 1140px; }
 .page-h { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
@@ -549,216 +552,128 @@ function scrollDown(el) {
   el._sd = setTimeout(() => el.scrollTo({ top: el.scrollHeight, behavior: "auto" }), 420);
 }
 
-$("#brand").innerHTML = BRAND;
-const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-let S, steps;
+// Public backend URL only. Never place an API key in this file.
+window.SYNAPTIQ_API_BASE = "";
 
-const EVENTS = [
-  { when: "Sep 2026", what: "Payouts moved from daily to weekly", why: "Bluewater's finance team reconciles every Friday.", who: ["JP", 4, "Jordan Park"], src: "BLU-88" },
-  { when: "Jul 2026", what: "Manual approval for payouts over $50,000", why: "Bluewater's auditor required it after a duplicate payout.", who: ["JP", 4, "Jordan Park"], src: "BLU-61" },
-  { when: "Mar 2026", what: "Extra escalation step added to failed payouts", why: null, who: ["JO", 2, "Jamie Ortiz"], src: "PR #311" },
-  { when: "Jan 2026", what: "Webhook retries raised from 3 to 5", why: "Bluewater's ERP times out at month-end and drops webhooks.", who: ["MC", 1, "Maria Chen"], src: "BLU-23" },
-  { when: "Nov 2025", what: "Account went live on the standard payout flow", why: "Standard onboarding.", who: ["JO", 2, "Jamie Ortiz"], src: "BLU-1" },
-];
-const ANSWER = "Bluewater's ops team must get a phone call before any failed payout is retried. It's in their contract (MSA §7.2) after an automatic retry double-paid one of their carriers. Please keep it.";
-
-function init() {
-  RUN++;
-  S = { stage: "list", closed: false, decided: null, asked: false };
-  steps = Checklist($("#try"), ["Open the account you were just assigned", "Close the gap the briefing found", "Decide what to do with your first ticket"]);
-  $("#gapCount").textContent = "1";
-  renderList();
-  $("#work").scrollTop = 0;
-}
-$("#restart").addEventListener("click", init);
-
-function renderList() {
-  $("#view").innerHTML = `
-    <div class="page-h reveal"><h1>My accounts</h1><p>Synaptiq prepares a briefing for every account you're assigned, so you start with the history instead of digging for it.</p></div>
-    <section class="accounts reveal" aria-label="Accounts">
-      <div class="acc new">
-        <div class="acc-logo" style="background:#1f5f8b">B</div>
-        <div><h3>Bluewater Logistics</h3><p>Freight carrier payouts · Enterprise plan · Assigned to you today</p></div>
-        <div class="acc-r"><span class="pill ok">Briefing ready</span><button class="btn primary cue" type="button" data-open-account>Open account</button></div>
-      </div>
-      <div class="acc">
-        <div class="acc-logo" style="background:#7a4fb5">H</div>
-        <div><h3>Halden Retail</h3><p>Card payments · Yours since May 2026</p></div>
-        <div class="acc-r"><button class="btn" type="button" data-other>Open account</button></div>
-      </div>
-      <div class="acc">
-        <div class="acc-logo" style="background:#2f7d55">N</div>
-        <div><h3>Northpine Clinics</h3><p>Patient billing · Yours since February 2026</p></div>
-        <div class="acc-r"><button class="btn" type="button" data-other>Open account</button></div>
-      </div>
-    </section>`;
-  $("[data-open-account]").addEventListener("click", openAccount);
-  $$("[data-other]").forEach((b) => b.addEventListener("click", () => toast("Your other accounts have no changes since you last opened them. Bluewater Logistics is the new one.")));
-}
-
-async function openAccount() {
-  const id = RUN;
-  S.stage = "account";
-  steps.complete(0);
-  $("#view").innerHTML = `
-    <button class="back" type="button" data-back><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>My accounts</button>
-    <div class="acct-head reveal">
-      <div class="acc-logo" style="background:#1f5f8b">B</div>
-      <div><h1>Bluewater Logistics</h1>
-        <div class="acct-meta"><span>Freight carrier payouts</span><span>Live since Nov 2025</span><span>Previous owner: Jamie Ortiz, now on the Platform team</span></div></div>
-    </div>
-    <div id="acctBody"><section class="panel prep reveal"><h2>Preparing your briefing</h2><div class="skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div id="prep"></div></section></div>`;
-  $("[data-back]").addEventListener("click", () => { RUN++; S.stage = "list"; renderList(); });
-  await think($("#prep"), ["Reading 47 tickets and 12 pull requests", "Reading 3 Slack channels and 2 call notes", "Checking which changes have a recorded reason"], id, 620);
-  if (!alive(id)) return;
-  renderAccount(true);
-}
-
-function timeline() {
-  return EVENTS.map((e, i) => {
-    const isGap = e.why === null;
-    const cls = isGap ? (S.closed ? "closed" : "gap") : "";
-    const why = isGap
-      ? (S.closed ? `<b>Why:</b> ${ANSWER}` : "No reason recorded anywhere")
-      : `<b>Why:</b> ${e.why}`;
-    const badge = isGap ? (S.closed ? '<span class="pill ok">Verified by Jamie Ortiz</span>' : '<span class="pill gap">Gap</span>' + (S.asked ? "" : '<button class="btn" type="button" data-tl-ask style="padding:3px 10px;font-size:12.5px">Ask Jamie</button>')) : "";
-    return `<li class="${cls}" data-ev="${i}">
-      <span class="when">${e.when}</span><span class="node" aria-hidden="true"></span>
-      <div class="body"><div class="what">${e.what}</div><div class="why">${why}</div>
-      <div class="by"><span class="avatar av-${e.who[1]}">${e.who[0]}</span><span>${e.who[2]}</span><span class="src">${e.src}</span>${badge}</div></div></li>`;
-  }).join("");
-}
-
-function renderAccount(animate) {
-  const id = RUN;
-  $("#acctBody").innerHTML = `
-    <div class="grid2">
-      <section class="panel brief ${animate ? "reveal" : ""}">
-        <div class="brief-top">
-          <h2>Before you touch this account</h2>
-          <p class="lead" id="lead">${animate ? "" : leadText()}</p>
-          <div class="counts"><span class="pill ok">${S.closed ? 5 : 4} of 5 changes explained</span><span class="pill ${S.closed ? "ok" : "gap"}" id="gapPill">${S.closed ? "No open gaps" : "1 gap"}</span><span class="pill plain">Sources: 47 tickets, 12 PRs, 3 channels</span></div>
-        </div>
-        <ol class="tl ${animate ? "enter" : ""}" aria-label="What changed, why, and who">${timeline()}</ol>
-      </section>
-      <div class="side-col">
-        <section class="panel gapcard ${S.closed ? "closed" : ""} ${animate ? "reveal" : ""}" id="gapPanel"></section>
-        <section class="panel ${animate ? "reveal" : ""}" id="ticketPanel"></section>
-        <section class="panel ${animate ? "reveal" : ""}">
-          <div class="panel-h"><h2>People who know this account</h2></div>
-          <div class="panel-b">
-            <div class="person"><span class="avatar av-2">JO</span><div><strong>Jamie Ortiz</strong><span>Made 4 of the last 6 changes · now on Platform</span></div></div>
-            <div class="person"><span class="avatar av-4">JP</span><div><strong>Jordan Park</strong><span>Customer success · owns the relationship</span></div></div>
-            <div class="person"><span class="avatar av-1">MC</span><div><strong>Maria Chen</strong><span>Payments · changed webhook retries</span></div></div>
-          </div>
-        </section>
-      </div>
-    </div>
-    <div id="recapSlot"></div>`;
-  renderGap();
-  renderTicket();
-  const tl = $("[data-tl-ask]");
-  if (tl) tl.addEventListener("click", () => { openGapDraft(); $("#gapPanel").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); });
-  if (animate) stream($("#lead"), leadText(), id, 16);
-}
-
-function leadText() {
-  return S.closed
-    ? "Bluewater runs a customized payout flow: weekly batch payouts, manual approval above $50,000, and a contractual phone call before any failed payout is retried. Every change below now has a reason."
-    : "Bluewater runs a customized payout flow: weekly batch payouts, manual approval above $50,000, and an extra escalation step for failed payouts. Four of the five changes below have a recorded reason. One doesn't, and that's where new owners get caught out.";
-}
-
-function renderGap() {
-  const p = $("#gapPanel");
-  if (S.closed) {
-    p.classList.add("closed");
-    p.innerHTML = `<div class="panel-h"><h2>Gap closed</h2><span class="pill ok">Verified</span></div>
-      <div class="panel-b"><p class="gq">Why was the escalation step added to failed payouts?</p>
-      <div class="reply">${ANSWER}</div>
-      <p class="small">Saved to Bluewater's briefing with Jamie's name and the contract reference, so whoever owns this account next starts with it.</p></div>`;
-    return;
+/* Shared live workspace. API credentials are held by server.py, never in this browser. */
+const Live = (() => {
+  const E = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let base = window.SYNAPTIQ_API_BASE || localStorage.getItem('synaptiq-api') || '';
+  const incoming = new URLSearchParams(location.search).get('api');
+  const validBase = s => { const u = new URL(s); if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost','127.0.0.1'].includes(u.hostname))) throw Error('Use an HTTPS backend URL.'); if (u.username || u.password || u.search || u.hash || u.pathname !== '/') throw Error('Enter only the backend origin, for example https://your-service.example.com'); return u.origin; };
+  if (incoming) { try { base = validBase(incoming); localStorage.setItem('synaptiq-api', base); } catch {} }
+  if (!base && ['localhost','127.0.0.1'].includes(location.hostname)) base = location.origin;
+  let health = null, shared = null;
+  const busyButtons = new Set();
+  function endpoint(path) { if (!base) throw Error('Connect the hosted workspace using “Connect workspace” above.'); return base + path; }
+  async function request(path, body) {
+    const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 65000);
+    try {
+      const res = await fetch(endpoint(path), {method: body ? 'POST' : 'GET', headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined, signal: controller.signal});
+      let data; try { data = await res.json(); } catch { throw Error('That URL is not the Synaptiq backend. Check the workspace connection.'); }
+      if (!res.ok) throw Error(data.error || 'Request failed. Please retry.'); return data;
+    } catch (err) { if (err.name === 'AbortError') throw Error('The server took too long. It may be waking up; please retry.'); if (err instanceof TypeError) throw Error('Could not reach the workspace. Check your connection and backend URL.'); throw err; }
+    finally { clearTimeout(timer); }
   }
-  p.innerHTML = `<div class="panel-h"><h2>1 gap Synaptiq found</h2><span class="pill gap">Undocumented</span></div>
-    <div class="panel-b">
-      <p class="gq">Why was the escalation step added to failed payouts?</p>
-      <p class="small">PR #311 has no description, no linked ticket, and no Slack discussion. Synaptiq flagged it before you needed it.</p>
-      <div class="person"><span class="avatar av-2 online">JO</span><div><strong>Jamie Ortiz is most likely to know</strong><span>Wrote PR #311 and made 4 of the last 6 changes</span></div></div>
-      <div id="gapAct">${S.asked ? "" : '<button class="btn primary cue" type="button" data-gap-ask>Ask Jamie</button>'}</div>
-    </div>`;
-  const b = $("[data-gap-ask]", p);
-  if (b) b.addEventListener("click", openGapDraft);
-}
-
-function openGapDraft() {
-  $("#gapAct").innerHTML = `<div class="draft reveal">
-    <label class="label small" for="toJamie">Message to Jamie (Synaptiq attaches PR #311 and the briefing)</label>
-    <textarea id="toJamie">Hi Jamie, I've taken over Bluewater. Why was the escalation step added to failed payouts in March (PR #311)? Is it still needed?</textarea>
-    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" data-gap-send>Send to Jamie</button><button class="btn quiet" type="button" data-gap-cancel>Cancel</button></div></div>`;
-  $("[data-gap-send]").addEventListener("click", sendGap);
-  $("[data-gap-cancel]").addEventListener("click", renderGap);
-}
-
-async function sendGap() {
-  const id = RUN;
-  S.asked = true;
-  const tlb = $("[data-tl-ask]");
-  if (tlb) tlb.remove();
-  toast("Sent to Jamie Ortiz with PR #311 attached.");
-  $("#gapAct").innerHTML = `<div class="waiting reveal"><span class="spin"></span><span>Waiting for Jamie. He usually answers the same day.</span><button class="btn" type="button" data-skip>Skip ahead to his reply</button></div>`;
-  let skipped = false;
-  $("[data-skip]").addEventListener("click", () => { skipped = true; });
-  for (let i = 0; i < 70 && !skipped; i++) { await wait(100); if (!alive(id)) return; }
-  if (!alive(id)) return;
-  S.closed = true;
-  $("#gapCount").textContent = "0";
-  steps.complete(1);
-  renderAccount(false);
-  const li = $('[data-ev="2"]');
-  if (li) li.classList.add("flash");
-  toast("Jamie answered. The briefing now explains every change.");
-  if (S.decided) { S.decided = null; renderTicket(); }
-}
-
-function renderTicket() {
-  const p = $("#ticketPanel");
-  const v = verdict();
-  p.innerHTML = `<div class="panel-h"><h2>Your first ticket</h2></div>
-    <div class="panel-b">
-      <div class="ticket"><span class="id">BLU-112 · from Bluewater</span><strong>"Can you simplify failed payouts by removing the extra escalation step?"</strong></div>
-      <p class="small">Using only the briefing, what do you do?</p>
-      <div class="choices">
-        <button type="button" data-decide="remove" aria-pressed="${S.decided === "remove"}">Remove the step</button>
-        <button type="button" data-decide="keep" aria-pressed="${S.decided === "keep"}">Keep it and explain why</button>
-      </div>
-      ${v}
-    </div>`;
-  $$("[data-decide]", p).forEach((b) => b.addEventListener("click", () => decide(b.dataset.decide)));
-}
-
-function verdict() {
-  if (!S.decided) return "";
-  if (!S.closed) {
-    return S.decided === "remove"
-      ? '<div class="verdict warn reveal" role="status"><b>Not yet.</b>The briefing flagged this step as undocumented, so nobody knows what removing it would break. Close the gap first.</div>'
-      : '<div class="verdict warn reveal" role="status"><b>Good instinct, but you can\'t explain why yet.</b>The briefing shows this step has no recorded reason. Close the gap to find out.</div>';
+  function link(version) {
+    const home = document.querySelector('.rail-foot a')?.getAttribute('href') || './';
+    const url = new URL(home, location.href);
+    url.search = ''; url.hash = '';
+    if (version) url.pathname = url.pathname.replace(/\/?$/, '/') + version + '/';
+    if (base) url.searchParams.set('api', base);
+    return url.href;
   }
-  return S.decided === "remove"
-    ? '<div class="verdict bad reveal" role="status"><b>That would break Bluewater\'s contract.</b>Jamie\'s answer is now in the briefing: MSA §7.2 requires a phone call before any failed payout is retried.</div>'
-    : '<div class="verdict good reveal" role="status"><b>Right call.</b>You can reply to Bluewater with the reason from their own contract (MSA §7.2), without searching through tickets or waiting on anyone.</div>';
-}
-
-function decide(choice) {
-  S.decided = choice;
-  renderTicket();
-  if (S.closed && choice === "keep" && steps.step === 2) {
-    steps.complete(2);
-    $("#recapSlot").innerHTML = `<section class="recap reveal"><h2>You knew the account before you had to ask</h2>
-      <p>The briefing showed what changed, why, and who worked on it, and it flagged the one decision nobody had written down. Jamie answered once, and that answer now sits in the briefing for whoever owns Bluewater next.</p></section>`;
-    $("#recapSlot").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "nearest" });
+  function propagate() {
+    document.querySelectorAll('a[href]').forEach(a => { try {const u = new URL(a.href); if (base && u.origin === location.origin && !a.getAttribute('href').startsWith('#') && !a.hasAttribute('download')) {u.searchParams.set('api',base); a.href=u.href;}} catch {} });
   }
-}
+  function error(container, err) { const p=document.createElement('p'); p.className='live-error'; p.setAttribute('role','alert'); p.textContent=err.message || String(err); container.appendChild(p); }
+  async function task(button, work) { if (busyButtons.has(button)) return; busyButtons.add(button); button.disabled=true; try {await work();} catch(e) {toast(E(e.message));} finally {button.disabled=false; busyButtons.delete(button);} }
+  function sourceList(sources) { return sources.length ? `<ul class="trail">${sources.map(s=>`<li><span class="node"></span><span><b>${E(s.title)}</b><br><span class="k">${E(s.owner)} · added ${new Date(s.created*1000).toLocaleDateString()}</span></span></li>`).join('')}</ul>` : ''; }
+  async function refreshState() { shared=await request('/api/state'); return shared; }
+  async function check() {
+    const status=document.querySelector('#liveStatus');
+    try {health=await request('/api/health'); status.textContent=health.ai_configured ? 'Live AI · shared workspace' : 'Workspace connected · AI key needed'; status.className='pill '+(health.ai_configured?'ok':'gap'); await refreshState();}
+    catch(e) {status.textContent=base ? 'Workspace offline · reconnect' : 'Connect workspace to use live AI';status.className='pill gap';health=null;}
+  }
+  function setup() {
+    const bar=document.createElement('div'); bar.className='live-bar';
+    bar.innerHTML=`<span id="liveStatus" class="pill plain">Connecting workspace…</span><nav class="live-versions" aria-label="Switch prototype"><a href="${E(link('a'))}">A · Ask</a><a href="${E(link('b'))}">B · Expert</a><a href="${E(link('c'))}">C · Briefing</a></nav><div class="row"><button class="btn quiet" id="liveDocs" type="button">Company documents</button><button class="btn quiet" id="liveConnect" type="button">Connect workspace</button><button class="btn quiet" id="liveReset" type="button">Reset shared demo</button></div>`;
+    const main=document.querySelector('.main') || document.querySelector('.page'); main.prepend(bar);
+    document.querySelector('#liveConnect').onclick=connect;
+    document.querySelector('#liveDocs').onclick=documents;
+    document.querySelector('#liveReset').onclick=e=>task(e.currentTarget,async()=>{if(!confirm('Reset the shared demo for everyone? This removes uploaded documents, routed questions and expert answers. Seed documents stay.'))return; await request('/api/reset',{confirm:'RESET DEMO'});location.reload();});
+    propagate(); check();
+  }
+  function dialog(title,html) {
+    document.querySelector('#liveDialog')?.remove();const d=document.createElement('dialog');d.id='liveDialog';d.className='live-dialog';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><h2>${E(title)}</h2><button class="btn quiet" type="button" data-close>Close</button></div><div class="live-dialog-body">${html}</div>`;
+    document.body.appendChild(d);d.querySelector('[data-close]').onclick=()=>d.close();d.addEventListener('close',()=>d.remove());d.showModal();return d;
+  }
+  function connect() {
+    const d=dialog('Connect your demo workspace',`<p>Enter the public URL of your hosted Synaptiq backend. All three versions use this same workspace. This field is for a URL, never an API key.</p><label>Backend URL<input id="backendUrl" type="url" placeholder="https://your-synaptiq-backend.example.com" value="${E(base)}"></label><button class="btn primary" id="saveBackend">Connect</button><p class="k">Use the same URL on another laptop, or share a version link after connecting.</p><div id="connectError"></div>`);
+    d.querySelector('#saveBackend').onclick=e=>task(e.currentTarget,async()=>{const c=d.querySelector('#connectError');c.replaceChildren();try {const proposed=validBase(d.querySelector('#backendUrl').value.trim());const r=await fetch(proposed+'/api/health',{signal:AbortSignal.timeout(15000)});const data=await r.json();if(!r.ok||data.ok!==true)throw Error('This is not a Synaptiq backend.');base=proposed;localStorage.setItem('synaptiq-api',base);const u=new URL(location.href);u.searchParams.set('api',base);history.replaceState(null,'',u);propagate();await check();d.close();toast('Workspace connected.');window.dispatchEvent(new Event('workspace-connected'));}catch(err){error(c,err);}});
+  }
+  async function uploadFiles(files, output) {
+    for (const file of files) {
+      if(file.size>4*1024*1024) {error(output,Error(file.name+': choose a file under 4 MB.'));continue;}
+      const p=document.createElement('p');p.textContent='Uploading '+file.name+'…';output.appendChild(p);
+      try {const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(Error('Could not read file.'));reader.readAsDataURL(file);});await request('/api/upload',{name:file.name,data});p.textContent=file.name+' added to company knowledge. Ask your question again.';p.className='saved-note';}
+      catch(e){p.className='live-error';p.textContent=file.name+': '+e.message;}
+    }
+    await refreshState().catch(()=>{});window.dispatchEvent(new Event('knowledge-updated'));
+  }
+  function uploadZone(container) {
+    container.innerHTML=`<label class="live-drop" tabindex="0">Drop company files here, or <span>choose files</span><input type="file" multiple accept=".txt,.md,.csv,.json,.log,.docx,.pdf,.png,.jpg,.jpeg,.webp" hidden></label><p class="k live-hint">Text, Word, PDF, or a readable floor-plan image · up to 4 MB per file · fictional demo data only</p><div class="upload-feedback" aria-live="polite"></div>`;
+    const zone=container.querySelector('.live-drop'), picker=zone.querySelector('input'), output=container.querySelector('.upload-feedback');let uploading=false;
+    const run=async files=>{if(uploading)return;uploading=true;zone.classList.add('uploading');try{await uploadFiles(files,output);}catch(e){error(output,e);}finally{uploading=false;zone.classList.remove('uploading');picker.value='';}};
+    picker.onchange=()=>run([...picker.files]);zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();picker.click();}};
+    for(const name of ['dragenter','dragover'])zone.addEventListener(name,e=>{e.preventDefault();zone.classList.add('dragging');});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('dragging'));zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragging');run([...e.dataTransfer.files]);});
+  }
+  async function documents() {
+    const d=dialog('Company knowledge',`<p>These documents and expert-approved answers are shared by A, B and C.</p><div id="docUpload"></div><div id="docList">Loading…</div>`);uploadZone(d.querySelector('#docUpload'));
+    async function list(){try{const s=await refreshState();if(!d.isConnected)return;const root=d.querySelector('#docList');root.innerHTML=s.documents.map(doc=>`<article class="live-document"><b>${E(doc.title)}</b><p class="k">${E(doc.owner)}</p>${doc.mime==='text/plain'?`<details><summary>Read document</summary><pre>${E(doc.text)}</pre></details>`:'<p class="k">Visual document available to the model</p>'}${!doc.id.startsWith('seed-')&&!doc.id.startsWith('answer-')?`<button class="btn quiet" data-delete="${E(doc.id)}">Remove</button>`:''}</article>`).join('');root.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>task(b,async()=>{await request('/api/delete-document',{id:b.dataset.delete});await list();}));}catch(e){const root=d.querySelector('#docList');root.textContent=e.message;}}
+    const changed=()=>list();window.addEventListener('knowledge-updated',changed);d.addEventListener('close',()=>window.removeEventListener('knowledge-updated',changed));await list();
+  }
+  function mountA(){
+    setup();let busy=false;const thread=document.querySelector('#thread'),input=document.querySelector('#askInput'),button=document.querySelector('#askBtn'),work=document.querySelector('#work');
+    document.querySelector('#try').innerHTML='<h4>Try this</h4><ol><li>Ask any company question.</li><li>Route missing knowledge to an expert in B.</li><li>Publish the answer in B, then ask again here.</li><li>Or upload a document and ask again.</li></ol>';
+    document.querySelector('#restart').onclick=()=>{if(!busy)start();};
+    document.querySelector('.nav').innerHTML=`<a class="on" href="#">Ask</a><a href="${link('b')}">Open expert inbox B</a><a href="${link('c')}">Context briefing C</a>`;
+    const upload=document.createElement('div');upload.className='live-upload-inline';document.querySelector('.composer').prepend(upload);uploadZone(upload);
+    function start(){thread.innerHTML='<div class="empty"><h1>What do you need to know?</h1><p>Ask freely. Synaptiq answers from company knowledge, shows its sources, and helps capture what nobody has written down.</p><div class="suggest"><button data-question="How do I run payments-retry tests locally?">How do I run payments-retry tests locally?</button><button data-question="Why does payments-retry stop after three retries?">Why does payments-retry stop after three retries?</button><button data-question="Where are the bathrooms in this office?">Where are the bathrooms in this office?</button></div></div>';thread.querySelectorAll('[data-question]').forEach(b=>b.onclick=()=>ask(b.dataset.question));document.querySelector('#chips').replaceChildren();input.value='';}
+    async function ask(question){if(busy||!question.trim())return;busy=true;button.disabled=true;input.disabled=true;thread.querySelector('.empty')?.remove();const q=document.createElement('div');q.className='q';q.textContent=question;thread.appendChild(q);const a=document.createElement('div');a.className='a';a.innerHTML=`<div class="a-mark">${LOGO}</div><div class="a-body"><p class="live-pending" role="status">Reading current company knowledge…</p></div>`;thread.appendChild(a);const body=a.querySelector('.a-body');scrollDown(work);
+      try{const r=await request('/api/ask',{question});body.innerHTML=`<article class="kcard"><div class="kcard-head"><h3>${r.status==='answered'?'Answer from company knowledge':'Knowledge gap'}</h3><span class="pill ${r.status==='answered'?'ok':'gap'}">${r.status==='answered'?'Sources found':'Not documented'}</span></div><div class="kcard-body"><p class="lead live-answer">${E(r.answer)}</p>${sourceList(r.sources)}${r.status==='missing'?`<div class="expert"><div class="who"><strong>${E(r.expert.name)}</strong><span>${E(r.expert_reason)}</span></div><button class="btn primary" data-route>Ask this expert</button></div>`:''}</div></article>`;
+        const route=body.querySelector('[data-route]');if(route)route.onclick=()=>task(route,async()=>{await request('/api/route',{question,expert_id:r.expert.id,evidence:r.answer});route.textContent='Sent to expert inbox';const p=document.createElement('p');p.innerHTML=`<a class="btn primary" href="${E(link('b'))}" target="_blank" rel="noopener">Open B to answer it</a> <span class="k">Return here and ask again after publishing.</span>`;body.appendChild(p);});
+      }catch(err){body.replaceChildren();error(body,err);const retry=document.createElement('button');retry.className='btn';retry.textContent='Retry question';retry.onclick=()=>ask(question);body.appendChild(retry);}finally{busy=false;button.disabled=false;input.disabled=false;input.focus();scrollDown(work);}}
+    document.querySelector('#ask').onsubmit=e=>{e.preventDefault();const q=input.value.trim();if(!q||busy)return;input.value='';ask(q);};start();
+  }
+  function mountB(){
+    setup();const view=document.querySelector('#view');let selected=null;let editing=false;let fingerprint='';
+    document.querySelector('#try').innerHTML='<h4>Live expert workflow</h4><p>Route a question from A. It appears here. Add your explanation, publish it, then ask A again.</p>';
+    document.querySelector('#pageSub').textContent='Real questions from A. Your published explanations become shared company knowledge.';
+    document.querySelector('.tabs').innerHTML='<button class="btn" type="button" id="refreshInbox">Refresh inbox</button>';
+    document.querySelector('#refreshInbox').onclick=e=>task(e.currentTarget,()=>render(true));document.querySelector('#restart').textContent='Refresh inbox';document.querySelector('#restart').onclick=()=>render(true);
+    document.querySelector('.nav').innerHTML=`<a class="on" href="#">Expert inbox <span class="count" id="liveInboxCount">0</span></a><a href="${link('a')}">Ask Synaptiq A</a><a href="${link('c')}">Context briefing C</a>`;
+    async function render(force=false){if(editing&&!force)return;try{const s=await refreshState();const key=JSON.stringify(s.questions);if(!force&&key===fingerprint)return;fingerprint=key;const pending=s.questions.filter(q=>q.status==='pending');document.querySelector('#liveInboxCount').textContent=pending.length;selected=pending.some(q=>q.id===selected)?selected:pending[0]?.id;const q=pending.find(q=>q.id===selected);view.innerHTML=`<section class="ledger"><div><b>${pending.length}</b><span>questions awaiting your expertise</span></div><div><b>${s.questions.filter(q=>q.status==='published').length}</b><span>answers actually published</span></div><div><b>${s.documents.length}</b><span>shared knowledge sources</span></div></section>${q?`<div class="panes"><section class="list"><div class="list-head">Questions from A</div>${pending.map(i=>`<button class="item" data-select="${E(i.id)}" aria-current="${i.id===selected}"><span class="q">${E(i.question)}</span><span class="meta">${E(s.experts.find(e=>e.id===i.expert)?.name)} · awaiting answer</span></button>`).join('')}</section><section class="detail"><div class="d-head"><span class="pill gap">Needs human expertise</span><h2>${E(q.question)}</h2></div><div class="d-body"><p class="k">Assigned to ${E(s.experts.find(e=>e.id===q.expert)?.name)}. You are playing this expert for the demo.</p><details><summary>What A found</summary><p class="live-answer">${E(q.evidence)}</p></details><label class="field">Your explanation<textarea id="expertAnswer" placeholder="Write the missing answer in your own words…"></textarea></label><label class="field">Applies to<input id="answerScope" value="Company knowledge" placeholder="For example: payments-retry only"></label><button class="btn primary" id="publishLive">Approve and publish to company memory</button><div id="publishFeedback" aria-live="polite"></div></div></section></div>`:`<section class="detail done-state"><h2>No unanswered questions</h2><p>Ask A something the documents don't explain, then choose “Ask this expert.” The question will arrive here automatically.</p><a class="btn primary" href="${E(link('a'))}">Open A</a></section>`}`;
+      view.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{if(editing&&!confirm('Discard your unpublished draft?'))return;editing=false;selected=b.dataset.select;render(true);});
+      const answer=view.querySelector('#expertAnswer');if(answer)answer.oninput=()=>editing=true;
+      const publish=view.querySelector('#publishLive');if(publish)publish.onclick=()=>task(publish,async()=>{const feedback=view.querySelector('#publishFeedback');feedback.replaceChildren();try{await request('/api/publish',{id:q.id,answer:answer.value,scope:view.querySelector('#answerScope').value});editing=false;await render(true);toast('Published. A and C can now use your answer.');const note=document.createElement('p');note.className='saved-note';note.innerHTML=`Answer saved. <a href="${E(link('a'))}">Return to A and ask again →</a>`;view.prepend(note);}catch(e){error(feedback,e);}});
+    }catch(err){if(!view.querySelector('#expertAnswer')){view.replaceChildren();error(view,err);}}}
+    window.addEventListener('focus',()=>render());window.addEventListener('workspace-connected',()=>render(true));setInterval(()=>{if(!document.hidden)render();},4000);render(true);
+  }
+  function mountC(){
+    setup();document.querySelector('#try').innerHTML='<h4>Live context briefing</h4><p>Generate a briefing from the shared documents. Publish missing customer context in B, then refresh to see the briefing change.</p>';
+    const view=document.querySelector('#view');document.querySelector('#restart').textContent='Refresh briefing';document.querySelector('#restart').onclick=brief;
+    document.querySelector('.nav').innerHTML=`<a class="on" href="#">Customer briefing</a><a href="${link('a')}">Ask Synaptiq A</a><a href="${link('b')}">Expert inbox B</a>`;
+    function intro(){view.innerHTML='<div class="page-h"><h1>Bluewater Logistics</h1><p>Your customer handoff, grounded in the current shared company knowledge.</p></div><section class="panel"><div class="panel-b"><p>See what changed, why it changed, who knows, and which decisions still need an explanation.</p><button class="btn primary" id="generateBrief">Generate current briefing</button><div id="briefResult" aria-live="polite"></div></div></section>';document.querySelector('#generateBrief').onclick=brief;}
+    async function brief(){const b=document.querySelector('#generateBrief');if(b.disabled)return;b.disabled=true;const root=document.querySelector('#briefResult');root.innerHTML='<p class="live-pending">Reading current documents and expert answers…</p>';try{const r=await request('/api/brief',{});root.innerHTML=`<article class="live-brief"><p class="live-answer">${E(r.answer)}</p><h3>Supporting sources</h3>${sourceList(r.sources)}<a class="btn" href="${E(link('a'))}">Ask a follow-up in A</a></article>`;}catch(e){root.replaceChildren();error(root,e);}finally{b.disabled=false;b.textContent='Refresh from company knowledge';}}
+    intro();
+  }
+  return {mountA,mountB,mountC,setup};
+})();
 
-init();
+Live.mountC();
 </script>
 
 </body>
