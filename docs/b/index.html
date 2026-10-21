@@ -350,6 +350,20 @@ p { margin: 0; }
 .answer mark { background: var(--gap-weak); color: var(--gap); border-radius: 4px; padding: 0 4px; font-weight: 600; }
 .note { font-size: 13.5px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
 .note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; color: var(--brand); }
+.foundbox { background: var(--brand-weak); border-radius: var(--r-md); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+.foundbox img { width: 30px; height: 30px; object-fit: contain; flex: none; }
+.foundbox b { display: block; color: var(--brand); font-size: 14.5px; margin-bottom: 2px; }
+.foundbox p { font-size: 14.5px; line-height: 1.5; }
+.why-now { display: flex; gap: 10px; align-items: center; font-size: 14px; padding: 10px 12px; border-radius: var(--r-md); background: var(--gap-weak); }
+.why-now b { color: var(--gap); }
+.found-mark { width: 22px; height: 22px; border-radius: 50%; background: var(--brand-weak); display: grid; place-items: center; }
+.found-mark img { width: 15px; height: 15px; object-fit: contain; }
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choices button { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-md); padding: 11px 13px; font-size: 14.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: border-color .2s, background .2s, transform .25s var(--ease); }
+.choices button::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line-strong); flex: none; transition: border-width .2s, border-color .2s; }
+.choices button:hover { border-color: var(--brand); transform: translateX(3px); }
+.choices button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-weak); }
+.choices button[aria-pressed="true"]::before { border: 4.5px solid var(--brand); }
 .riskbox { background: var(--risk-weak); border-radius: var(--r-md); padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
 .riskbox b { color: var(--risk); }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
@@ -562,6 +576,7 @@ $("#brand").innerHTML = BRAND;
 
 const ITEMS = [
   { key: "flag", q: "Why is the fast-settle flag on in staging?", askers: [["LB", 1], ["TA", 2], ["RM", 4]], who: "Lena Brooks, Tom Ahn, Ravi Menon and 2 others", n: 5, when: "This week", pill: '<span class="pill ok">Draft ready</span>' },
+  { key: "found", q: "Why do the three retry services use different limits?", askers: [], found: true, who: "nobody yet", n: 0, when: "Found today", pill: '<span class="pill ok">Found by Synaptiq</span>' },
   { key: "retry", q: "Why does payments-retry only retry 3 times?", askers: [["SO", 3]], who: "Sam Okafor, backend engineer, 3 weeks in", n: 1, when: "Today, 10:14", pill: '<span class="pill gap">Needs your input</span>' },
   { key: "delete", q: "Can I delete duplicate settlement records directly in the database?", askers: [["TA", 2]], who: "Tom Ahn, payments engineer", n: 1, when: "Today, 11:02", pill: '<span class="pill risk">High-risk</span>' },
   { key: "notme", q: "How do I rotate the webhook signing keys?", askers: [["RM", 4]], who: "Ravi Menon, integrations", n: 1, when: "Today, 11:40", pill: '<span class="pill plain">Routed by code ownership</span>' },
@@ -570,10 +585,10 @@ let S, steps;
 
 function init() {
   RUN++;
-  S = { tab: "inbox", sel: "flag", done: new Set(), avoided: 3, reused: 14, minutes: 4, answered: 37, editing: false, personal: false, notme: false,
+  S = { tab: "inbox", sel: "flag", done: new Set(), avoided: 3, reused: 14, minutes: 4, prevented: 2, choice: null, answered: 37, editing: false, personal: false, notme: false,
         limit: "5", delivery: "now", topics: ["settlement records", "ledger balances", "refund reversals"], reuse: true, swap: true, own: false,
-        shown: { avoided: 3, reused: 14, minutes: 4 } };
-  steps = Checklist($("#try"), ["Confirm a drafted answer in one click", "Fill in a draft that needs your input", "Handle the high-risk question yourself"]);
+        shown: { avoided: 3, reused: 14, prevented: 2 } };
+  steps = Checklist($("#try"), ["Confirm a drafted answer in one click", "Close a gap Synaptiq found before anyone asked", "Fill in a draft that needs your input", "Handle the high-risk question yourself"]);
   render();
   $("#work").scrollTop = 0;
 }
@@ -593,20 +608,20 @@ function render() {
   $("#navAnswered").textContent = S.answered;
   if (S.tab === "settings") { $("#pageTitle").textContent = "How Synaptiq asks you"; $("#pageSub").textContent = "You decide how often you're asked, when, and which topics always need you personally."; renderSettings(); return; }
   $("#pageTitle").textContent = "Your inbox";
-  $("#pageSub").textContent = "Questions company memory couldn't answer. Each one arrives with a draft and the evidence Synaptiq found, so a reply takes seconds.";
+  $("#pageSub").textContent = "Questions people asked, and gaps Synaptiq found before anyone did. Each one arrives with a draft and the evidence, so a reply takes seconds.";
   const items = openItems();
   const ledger = `
     <section class="ledger" aria-label="This week">
       <div><b id="lAvoid">${S.shown.avoided}</b><span>interruptions avoided this week</span></div>
       <div><b id="lReuse">${S.shown.reused}</b><span>times your answers were reused</span></div>
-      <div><b id="lMin">${S.shown.minutes} min</b><span>your time spent here this week</span></div>
+      <div><b id="lPrev">${S.shown.prevented}</b><span>gaps closed before anyone asked</span></div>
     </section>`;
   if (!items.length) {
     $("#view").innerHTML = ledger + `
       <div class="detail done-state reveal">
         <div class="big-check">${CHECK}</div>
         <h2>Inbox clear</h2>
-        <p>Four questions handled in a couple of minutes, without a single DM. Routine answers now live in company memory, the risky one stayed with you, and the misrouted one went to the right person.</p>
+        <p>Five items handled in a couple of minutes, without a single DM. One gap was closed before anyone got stuck, routine answers now live in company memory, the risky one stayed with you, and the misrouted one went to the right person.</p>
         <button class="btn" type="button" id="again">Restart demo</button>
       </div>`;
     $("#again").addEventListener("click", init);
@@ -621,12 +636,12 @@ function render() {
         ${items.map((i) => `
           <button class="item" type="button" data-open="${i.key}" aria-current="${i.key === S.sel}">
             <span class="q">${i.q}</span>
-            <span class="meta"><span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>${i.n > 1 ? i.n + " people asked" : i.when}</span>${i.pill}</span>
+            <span class="meta">${i.found ? `<span class="found-mark">${LOGO}</span><span>${i.when}</span>` : `<span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>${i.n > 1 ? i.n + " people asked" : i.when}</span>`}${i.pill}</span>
           </button>`).join("")}
       </section>
       <section class="detail" id="detail" aria-live="polite"></section>
     </div>`;
-  $$("[data-open]").forEach((b) => b.addEventListener("click", () => { if (S.sel === b.dataset.open) return; S.sel = b.dataset.open; S.editing = S.personal = S.notme = S.own = false; S.swap = true; render(); if (window.innerWidth < 960) $("#detail").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); }));
+  $$("[data-open]").forEach((b) => b.addEventListener("click", () => { if (S.sel === b.dataset.open) return; S.sel = b.dataset.open; S.editing = S.personal = S.notme = S.own = false; S.choice = null; S.swap = true; render(); if (window.innerWidth < 960) $("#detail").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); }));
   renderDetail();
   syncLedger();
 }
@@ -634,13 +649,13 @@ function render() {
 function syncLedger() {
   countTo($("#lAvoid"), S.avoided);
   countTo($("#lReuse"), S.reused);
-  countTo($("#lMin"), S.minutes, " min");
-  S.shown = { avoided: S.avoided, reused: S.reused, minutes: S.minutes };
+  countTo($("#lPrev"), S.prevented);
+  S.shown = { avoided: S.avoided, reused: S.reused, prevented: S.prevented };
 }
 
 function head(i) {
   return `<div class="d-head"><div class="row" style="display:flex;gap:8px;flex-wrap:wrap">${i.pill}</div><h2>${i.q}</h2>
-    <div class="d-sub"><span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>Asked by ${i.who}</span><span>${i.when}</span></div></div>`;
+    <div class="d-sub">${i.found ? `<span class="found-mark">${LOGO}</span><span>Nobody has asked yet</span>` : `<span class="stack">${i.askers.map(([t, c]) => `<span class="avatar av-${c}">${t}</span>`).join("")}</span><span>Asked by ${i.who}</span>`}<span>${i.when}</span></div></div>`;
 }
 
 function renderDetail() {
@@ -676,6 +691,47 @@ function renderDetail() {
     });
     $("[data-notme-flag]", d).addEventListener("click", () => toast("This came from your own PR, so Synaptiq is fairly sure it's yours. Try the webhook question to see redirecting."));
   }
+  if (i.key === "found") {
+    const drafts = {
+      intentional: "Each service protects a different downstream system. payments-retry stops at 3 because ledger-gw v1 drops burst retries. Refunds go through the card network, which allows 5. Payouts are batched and idempotent, so 10 is safe. Don't unify them.",
+      historical: "There's no reason for the difference: the limits grew separately over time. Treat 3 as the standard and align refund-retry and payout-retry with it. Ticket PAY-1561 tracks the change.",
+    };
+    d.innerHTML = head(i) + `
+      <div class="d-body">
+        <div class="foundbox">${LOGO}<div><b>Synaptiq found this gap while reading code changes</b><p>payments-retry, refund-retry and payout-retry retry failed calls 3, 5 and 10 times. No doc, pull request or ticket explains why they differ.</p></div></div>
+        <div class="why-now"><span><b>Why ask now:</b> two engineers are changing these services this week (PAY-1530, PAY-1544).</span></div>
+        <div><p class="label">Evidence</p><ul class="trail" style="margin-top:8px">
+          <li><span class="node"></span><span><code>retry/policy.go</code>: <code>RETRY_LIMIT = 3</code><br><span class="k">You, March 2023</span></span></li>
+          <li><span class="node"></span><span><code>refund/retry.ts</code>: <code>maxAttempts = 5</code><br><span class="k">Dev Patel, June 2024</span></span></li>
+          <li><span class="node"></span><span><code>payout/config.yaml</code>: <code>retries: 10</code><br><span class="k">Jamie Ortiz, February 2025</span></span></li>
+          <li><span class="node miss"></span><span><b>Docs and tickets:</b> nothing explains the difference<br><span class="k">Searched 3 repositories, 214 tickets, 2 wikis</span></span></li>
+        </ul></div>
+        <div class="field"><span class="label">Is the difference intentional?</span>
+          <div class="choices">
+            <button type="button" data-choice="intentional" aria-pressed="${S.choice === "intentional"}" ${S.choice ? "" : 'class="cue"'}>Yes, each protects a different downstream system</button>
+            <button type="button" data-choice="historical" aria-pressed="${S.choice === "historical"}">No, it's historical and they should match</button>
+            <button type="button" data-choice="unsure" aria-pressed="${S.choice === "unsure"}">I'm not sure, ask Dev and Jamie</button>
+          </div></div>
+        <div class="field" ${S.choice && S.choice !== "unsure" ? "" : "hidden"} data-found-draft>
+          <label class="label" for="foundEdit">Synaptiq's draft from your choice (edit it if you like)</label>
+          <textarea id="foundEdit">${S.choice && drafts[S.choice] ? drafts[S.choice] : ""}</textarea>
+          <div class="actions"><button class="btn primary" type="button" data-found-publish>${CHECK}Publish answer</button></div>
+        </div>
+        <p class="note">${INFO}<span>Answering now means nobody has to interrupt you about this later.</span></p>
+      </div>`;
+    $$("[data-choice]", d).forEach((b) => b.addEventListener("click", () => {
+      S.choice = b.dataset.choice;
+      if (S.choice === "unsure") { finish("found", 0, "Sent to Dev Patel and Jamie Ortiz with the evidence. You won't be asked again.", 1); return; }
+      renderDetail();
+      $("[data-found-draft]").classList.add("reveal");
+    }));
+    const pub = $("[data-found-publish]", d);
+    if (pub) pub.addEventListener("click", () => {
+      if ($("#foundEdit").value.trim().length < 30) { toast("Add a short explanation before publishing."); $("#foundEdit").focus(); return; }
+      S.prevented += 1;
+      finish("found", 2, "Published before anyone got stuck. The two engineers changing these services will see it first.", 1);
+    });
+  }
   if (i.key === "retry") {
     d.innerHTML = head(i) + `
       <div class="d-body">
@@ -709,7 +765,7 @@ function renderDetail() {
     $("[data-publish]", d).addEventListener("click", () => {
       const v = $("#retryEdit").value.trim();
       if (v.length < 40) { toast("Add the missing reason before publishing, or use Synaptiq's best guess."); $("#retryEdit").focus(); return; }
-      finish("retry", 1, "Published. Sam was notified and is unblocked. The answer is saved with its scope and review date.", 1);
+      finish("retry", 1, "Published. Sam was notified and is unblocked. The answer is saved with its scope and review date.", 2);
     });
   }
   if (i.key === "delete") {
@@ -732,8 +788,8 @@ function renderDetail() {
         </div>
       </div>`;
     $("[data-personal]", d).addEventListener("click", () => { S.personal = true; renderDetail(); $("#replyTom").focus(); });
-    $("[data-book]", d).addEventListener("click", () => finish("delete", 0, "Booked 15 minutes with Tom today at 3:30 pm. Nothing was saved to company memory.", 2, 1));
-    $("[data-reply]", d).addEventListener("click", () => finish("delete", 0, "Sent to Tom only. High-risk answers are never saved or reused automatically.", 2, 1));
+    $("[data-book]", d).addEventListener("click", () => finish("delete", 0, "Booked 15 minutes with Tom today at 3:30 pm. Nothing was saved to company memory.", 3, 1));
+    $("[data-reply]", d).addEventListener("click", () => finish("delete", 0, "Sent to Tom only. High-risk answers are never saved or reused automatically.", 3, 1));
   }
   if (i.key === "notme") {
     d.innerHTML = head(i) + `
@@ -773,7 +829,7 @@ async function finish(key, avoided, msg, step, mins = 0) {
   const row = $(`[data-open="${key}"]`);
   if (row) { row.style.height = row.offsetHeight + "px"; row.offsetHeight; row.classList.add("out"); row.style.height = "0px"; }
   S.avoided += avoided;
-  if (key === "flag" || key === "retry") { S.answered += 1; S.reused += avoided; }
+  if (key === "flag" || key === "retry" || (key === "found" && S.choice !== "unsure")) { S.answered += 1; S.reused += avoided; }
   S.minutes += mins;
   toast(msg);
   if (step >= 0) steps.complete(step);
@@ -781,6 +837,7 @@ async function finish(key, avoided, msg, step, mins = 0) {
   if (!alive(id)) return;
   S.done.add(key);
   S.editing = S.personal = S.notme = S.own = false;
+  S.choice = null;
   const next = openItems()[0];
   if (next) S.sel = next.key;
   S.swap = true;
