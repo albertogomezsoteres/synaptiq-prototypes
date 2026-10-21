@@ -39,6 +39,8 @@ const Live = (() => {
     catch(e) {status.textContent=base ? 'Workspace offline · reconnect' : 'Connect workspace to use live AI';status.className='pill gap';health=null;}
   }
   function setup() {
+    const brand = document.querySelector('#brand');
+    if (brand && !brand.innerHTML.trim()) brand.innerHTML = BRAND;
     const bar=document.createElement('div'); bar.className='live-bar';
     bar.innerHTML=`<span id="liveStatus" class="pill plain">Connecting workspace…</span><nav class="live-versions" aria-label="Switch prototype"><a href="${E(link('a'))}">A · Ask</a><a href="${E(link('b'))}">B · Expert</a><a href="${E(link('c'))}">C · Briefing</a></nav><div class="row"><button class="btn quiet" id="liveDocs" type="button">Company documents</button><button class="btn quiet" id="liveConnect" type="button">Connect workspace</button><button class="btn quiet" id="liveReset" type="button">Reset shared demo</button></div>`;
     const main=document.querySelector('.main') || document.querySelector('.page'); main.prepend(bar);

@@ -58,7 +58,7 @@ class SharedWorkspaceTests(unittest.TestCase):
         self.assertEqual(len(app.state()['documents']), 4)
 
     def test_rejects_fake_citations(self):
-        with patch.object(app, 'KEY', 'test-not-real'), patch.object(app.urllib.request, 'urlopen', return_value=Response({'status': 'answered', 'answer': 'Invented location', 'source_ids': ['fake']})):
+        with patch.object(app, 'KEY', 'test-not-real'), patch.object(app.urllib.request, 'urlopen', return_value=Response({'status': 'answered', 'fully_supported': True, 'answer': 'Invented location', 'source_ids': ['fake']})):
             result = app.model_json('Where is the bathroom?')
         self.assertEqual(result['status'], 'missing')
         self.assertNotIn('Invented location', result['answer'])
