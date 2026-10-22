@@ -31,19 +31,19 @@ Each version pairs one persona from our customer discovery with a different prod
 
 | | Version | Persona | Approach | Hypothesis | Validated if |
 |---|---|---|---|---|---|
-| **A** | [Ask Synaptiq](https://albertogomezsoteres.github.io/synaptiq-prototypes/a/) | New-to-system engineer | **Pull:** the engineer asks | Engineers trust and act on answers that show source, owner and review date, and that admit "not found" and route the question. | Testers would act on the answer and see "not found" as helpful. |
-| **B** | [Expert Inbox](https://albertogomezsoteres.github.io/synaptiq-prototypes/b/) | Go-to expert engineer | **Capture:** the expert validates | Experts capture what they know if each contribution is one click on a drafted answer, and they see the interruptions it saves. | Testers confirm an answer in under 30 seconds and prefer it to DMs. |
+| **A** | [Ask Synaptiq](https://albertogomezsoteres.github.io/synaptiq-prototypes/a/) | New-to-system engineer | **Pull:** the engineer asks | Engineers trust and act on answers that show source, owner and available freshness information, and that admit "not found" and route the question. | Testers would act on the answer and see "not found" as helpful. |
+| **B** | [Expert Inbox](https://albertogomezsoteres.github.io/synaptiq-prototypes/b/) | Go-to expert engineer | **Capture:** the expert validates | Experts prefer publishing one scoped explanation with evidence in view to repeating it in DMs. | Testers publish an explanation in under a minute and prefer it to a repeated DM. |
 | **C** | [Context Briefing](https://albertogomezsoteres.github.io/synaptiq-prototypes/c/) | Deployment / cross-team engineer | **Push:** Synaptiq goes first | Engineers get unblocked faster when Synaptiq shows what changed, why, who worked on it, and what nobody wrote down, before they ask. | Testers make the right call on their first ticket without asking anyone. |
 
 All three versions run on the same fictional company (Corvex Payments), with the same data and the same design, so the only variable is the product approach. The scenarios come from our customer interviews.
 
 ### What we deliberately left out
 
-Live Slack/GitHub integrations, login, enterprise permissions and manager analytics remain out of scope. The demo now uses a real Gemini API, a shared SQLite knowledge store, document uploads and expert publishing.
+Live Slack/GitHub integrations, login, enterprise permissions and manager analytics remain out of scope. The demo now uses a real Gemini API, a shared knowledge store, document uploads and expert publishing.
 
 ## Try it
 
-Open the site and check that the header says **Live AI · shared workspace**. A accepts free-form questions, B handles the actual routed questions, and C generates a briefing from the same current documents. **Restart demo** clears A's conversation only. **Reset shared demo** removes uploaded documents and expert answers for everyone, after confirmation.
+Open the site and check that the header says **Live AI · shared workspace**. A accepts free-form questions, B handles the actual routed questions, and C generates a briefing from the same current documents. **Clear this chat** clears A's conversation only. **Reset shared demo** removes uploaded documents and expert answers for everyone, after confirmation.
 
 Use the files in `demo-files/` for the upload demonstration. They are not included in company knowledge until you upload them. PDF and PNG/JPG/WebP floor plans are passed to Gemini's visual input; text and DOCX files become text sources. Limit: 4 MB per file, 30 sources in the shared classroom workspace.
 

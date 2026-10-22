@@ -32,7 +32,7 @@ HEAD = (
 
 def render(text, links):
     text = text.replace("/*SHARED_CSS*/", CSS).replace("//SHARED_JS", JS)
-    for key, val in {**IMAGES, **links}.items():
+    for key, val in {**IMAGES, "office_guide_download": "data:text/plain;base64," + base64.b64encode((ROOT / "demo-files" / "office-guide.txt").read_bytes()).decode(), **links}.items():
         text = text.replace("{{" + key.upper() + "}}", val)
     return text
 
