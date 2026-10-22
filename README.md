@@ -65,7 +65,7 @@ tests/qa.py      Browser test that clicks through every flow
 
 ## Development
 
-The frontend is plain HTML, CSS and JavaScript. `server.py` supplies the API and persistent SQLite storage using Python 3.12's standard library. The Gemini API key is read from the server environment, or from an ignored local `.env` file. It is never embedded in the published pages.
+The frontend is plain HTML, CSS and JavaScript. The hosted demo uses the Cloudflare Worker API in `cloud/worker-api.js`, with D1 for shared records and R2 for uploaded PDFs/images. `server.py` provides the same interface locally using Python 3.12 and SQLite. The Gemini key stays in server-side configuration; it is never embedded in the published pages.
 
 ```bash
 python3 build.py                     # rebuild docs/ after editing src/
@@ -80,7 +80,7 @@ python3 -m unittest discover -s tests -p test_live.py -v
 
 `tests/qa.py` covers the earlier scripted prototype; its selectors do not apply to the live UI. The live API and shared-state tests are in `tests/test_live.py`.
 
-**Publishing:** GitHub Pages still publishes `main` from `/docs`, but the live API must be hosted separately. Set the public backend URL in `src/config.js`, rebuild, and publish. The connection can also be supplied using **Connect workspace** or an `?api=https://...` query parameter. See [DEPLOYMENT.md](DEPLOYMENT.md) for the hosting checklist and demo script.
+**Publishing:** GitHub Pages publishes `main` from `/docs`; its shared backend is configured in `src/config.js`. Rebuild with `python3 build.py` after frontend changes. The connection can also be supplied using **Connect workspace** or an `?api=https://...` query parameter. See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting details and the demo script.
 
 ## Team
 

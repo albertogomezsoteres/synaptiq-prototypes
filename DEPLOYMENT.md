@@ -2,7 +2,15 @@
 
 The GitHub Pages frontend and the hosted API are separate. Updating `docs/` alone does not start the AI backend.
 
-## Host the backend
+## Current hosted demo
+
+The backend is hosted through Sites at `https://synaptiq-class-demo.swoonyspice130.chatgpt.site`, independently of Railway. The same host also serves A, B and C as a backup demo link. GitHub Pages uses that backend through the public URL in `src/config.js`.
+
+The cloud API source is in `cloud/worker-api.js`; its schema is in `cloud/schema.sql`. The hosted Worker uses persistent D1 records and R2 for binary uploads. The Sites project ID is `appgprj_6ad950e54b2c819184a7659c165dd477`. Its managed source repository contains the bundled Worker, frontend pages and migrations. Update and publish that existing Site for backend changes; do not create a second Site or put the API key in Git.
+
+The Python server below remains useful for local development or deployment to a Docker host. Local Python and the hosted Worker implement the same HTTP API, but are separate runtimes and separate databases.
+
+## Optional Docker hosting
 
 1. Deploy this GitHub repository to Railway using the included Dockerfile. Choose the branch containing the live-demo changes.
 2. In the service Variables, set `GEMINI_API_KEY` to your key and `GEMINI_MODEL` to `gemini-3.5-flash-lite` (or another model available to your Gemini project).
