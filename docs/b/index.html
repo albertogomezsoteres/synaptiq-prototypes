@@ -863,6 +863,18 @@ const Live = (() => {
 Live.mountStory = function mountStory() {
   const {E, request, refreshState, task, error, sourceList, setup} = Live._internals;
   setup({versions: false, resetLabel: 'Reset demo'});
+  /* Gemini is sometimes briefly overloaded. Retry those transient errors quietly before showing them. */
+  const TRANSIENT = /temporarily unavailable|did not return|incomplete answer|took too long|demo is busy|quota/i;
+  async function retrying(path, body, onRetry, tries = 3) {
+    for (let i = 1; ; i++) {
+      try { return await request(path, body); }
+      catch (e) {
+        if (i >= tries || !TRANSIENT.test(e.message || '')) throw e;
+        if (onRetry) onRetry(i);
+        await new Promise((r) => setTimeout(r, 3000 * i));
+      }
+    }
+  }
 
   const views = {ask: $('#viewAsk'), inbox: $('#viewInbox'), gaps: $('#viewGaps')};
   const FOLLOW_UP = 'Can I raise the payments-retry limit from 3 to 5?';
@@ -936,7 +948,7 @@ Live.mountStory = function mountStory() {
       const body = a.querySelector('.a-body');
       scrollDown(work);
       try {
-        const r = await request('/api/ask', {question});
+        const r = await retrying('/api/ask', {question}, () => { const p = body.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; }, 2);
         await refreshState().catch(() => {});
         const verified = r.status === 'answered' ? r.sources.find((s) => s.id.startsWith('answer-')) : null;
         const pill = verified
@@ -1073,14 +1085,17 @@ Live.mountStory = function mountStory() {
       root.innerHTML = '<p class="live-pending" role="status">Reviewing recent PRs, tickets and account history…</p>';
       stamp.textContent = 'Scanning'; stamp.className = 'pill plain';
       try {
-        const r = await request('/api/brief', {});
+        const r = await retrying('/api/brief', {}, () => { const p = root.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; });
         const s = await refreshState().catch(() => ({experts: []}));
         const blocks = sections(r.answer || '');
         let list = Array.isArray(r.gaps) && r.gaps.length ? r.gaps : [];
         if (!list.length) {
           const open = blocks.find((b) => b.title === 'Open gaps');
           const lines = open ? open.lines.join('\n').split(/\n+|(?:^|\s)[-•]\s+/).map((x) => x.replace(/^[\s\-•*\d.)]+/, '').trim()).filter((x) => x.length > 12) : [];
-          list = lines.slice(0, 4).map((text) => ({question: text, reason: '', expert: guessExpert(text, s.experts || [])}));
+          // One paragraph can hold several gaps: keep each sentence that names something missing.
+          const GAP = /not recorded|no reason|no description|not documented|undocumented|without (an )?explanation|unclear|unknown|nobody (recorded|documented|knows)|missing/i;
+          const items = lines.flatMap((x) => { const parts = x.split(/(?<=[.!?])\s+(?=[A-Z])/).map((y) => y.trim()); const hits = parts.filter((y) => GAP.test(y)); return hits.length ? hits : [x]; });
+          list = items.slice(0, 4).map((text) => ({question: text, reason: '', expert: guessExpert(text, s.experts || [])}));
         }
         const context = blocks.filter((b) => b.title !== 'Open gaps');
         root.innerHTML = `${list.length ? `<div class="gap-list">${list.map((g, i) => `<article class="gap-card"><div class="row" style="justify-content:space-between"><span class="pill gap">Not documented</span><span class="k">Found without a question</span></div><h3>${E(g.question)}</h3>${g.reason ? `<p class="k">${E(g.reason)}</p>` : ''}${g.expert ? `<div class="expert"><div class="who"><strong>${E(g.expert.name)}</strong><span>${E(g.expert.domain || 'Knows this area')}</span></div><button class="btn primary" type="button" data-gap="${i}">Ask ${E(g.expert.name.split(' ')[0])}</button></div>` : ''}</article>`).join('')}</div>` : `<p class="k">No open gaps found right now.</p>`}${context.length ? `<details class="live-brief-evidence"><summary>What Synaptiq reviewed</summary><div class="live-brief-sections">${context.map((b) => `<section class="live-brief-section"><h3>${E(b.title)}</h3><p class="live-answer">${E(b.lines.join('\n').trim())}</p></section>`).join('')}</div>${sourceList(r.sources || [])}</details>` : ''}`;

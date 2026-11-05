@@ -1,0 +1,8 @@
+Bluewater payout operations notes
+Owner: Jordan Park. Customer: Bluewater Logistics.
+
+August 2026: Jamie Ortiz moved the Bluewater payout cut-off from 5:00 pm to 3:00 pm ET in PR #342. The PR has no description and no linked ticket, so no reason is recorded.
+
+October 2026: the manual approval threshold for Bluewater was lowered from $50,000 to $25,000 (BLU-97). The ticket was closed without an explanation, and nobody recorded whether the change is temporary.
+
+October 2026: Bluewater asked for payout reports in CSV because their finance team imports them into Excel (BLU-99). Done.
