@@ -87,7 +87,7 @@ Live.mountStory = function mountStory() {
       const body = a.querySelector('.a-body');
       scrollDown(work);
       try {
-        const r = await retrying('/api/ask', {question}, () => { const p = body.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; }, 2);
+        const r = await retrying('/api/ask', {question}, () => { const p = body.querySelector('.live-pending'); if (p) p.textContent = 'Still reading company knowledge…'; }, 2);
         await refreshState().catch(() => {});
         const verified = r.status === 'answered' ? r.sources.find((s) => s.id.startsWith('answer-')) : null;
         const pill = verified
@@ -224,7 +224,7 @@ Live.mountStory = function mountStory() {
       root.innerHTML = '<p class="live-pending" role="status">Reviewing recent PRs, tickets and account history…</p>';
       stamp.textContent = 'Scanning'; stamp.className = 'pill plain';
       try {
-        const r = await retrying('/api/brief', {}, () => { const p = root.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; });
+        const r = await retrying('/api/brief', {}, () => { const p = root.querySelector('.live-pending'); if (p) p.textContent = 'Still reviewing recent work…'; });
         const s = await refreshState().catch(() => ({experts: []}));
         const blocks = sections(r.answer || '');
         let list = Array.isArray(r.gaps) && r.gaps.length ? r.gaps : [];

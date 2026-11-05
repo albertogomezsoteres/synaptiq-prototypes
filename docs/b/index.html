@@ -731,6 +731,9 @@ const Live = (() => {
   const incoming = new URLSearchParams(location.search).get('api');
   const validBase = s => { const u = new URL(s); if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost','127.0.0.1'].includes(u.hostname))) throw Error('Use an HTTPS backend URL.'); if (u.username || u.password || u.search || u.hash || u.pathname !== '/') throw Error('Enter only the backend origin, for example https://your-service.example.com'); return u.origin; };
   if (incoming) { try { base = validBase(incoming); localStorage.setItem('synaptiq-api', base); } catch {} }
+  const DEFAULT_API = window.SYNAPTIQ_API_BASE || '';
+  // The default backend needs no ?api= in the address bar; keep URLs clean.
+  if (incoming && base === DEFAULT_API) { try { const u = new URL(location.href); u.searchParams.delete('api'); history.replaceState(null, '', u); } catch {} }
   if (!base && ['localhost','127.0.0.1'].includes(location.hostname)) base = location.origin;
   let health = null, shared = null;
   const busyButtons = new Set();
@@ -749,11 +752,11 @@ const Live = (() => {
     const url = new URL(home, location.href);
     url.search = ''; url.hash = '';
     if (version) url.pathname = url.pathname.replace(/\/?$/, '/') + version + '/';
-    if (base) url.searchParams.set('api', base);
+    if (base && base !== DEFAULT_API) url.searchParams.set('api', base);
     return url.href;
   }
   function propagate() {
-    document.querySelectorAll('a[href]').forEach(a => { try {const u = new URL(a.href); if (base && u.origin === location.origin && !a.getAttribute('href').startsWith('#') && !a.hasAttribute('download')) {u.searchParams.set('api',base); a.href=u.href;}} catch {} });
+    document.querySelectorAll('a[href]').forEach(a => { try {const u = new URL(a.href); if (base && base !== DEFAULT_API && u.origin === location.origin && !a.getAttribute('href').startsWith('#') && !a.hasAttribute('download')) {u.searchParams.set('api',base); a.href=u.href;}} catch {} });
   }
   function error(container, err) { const p=document.createElement('p'); p.className='live-error'; p.setAttribute('role','alert'); p.textContent=err.message || String(err); container.appendChild(p); }
   async function task(button, work) { if (busyButtons.has(button)) return; busyButtons.add(button); button.disabled=true; try {await work();} catch(e) {toast(E(e.message));} finally {button.disabled=false; busyButtons.delete(button);} }
@@ -948,7 +951,7 @@ Live.mountStory = function mountStory() {
       const body = a.querySelector('.a-body');
       scrollDown(work);
       try {
-        const r = await retrying('/api/ask', {question}, () => { const p = body.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; }, 2);
+        const r = await retrying('/api/ask', {question}, () => { const p = body.querySelector('.live-pending'); if (p) p.textContent = 'Still reading company knowledge…'; }, 2);
         await refreshState().catch(() => {});
         const verified = r.status === 'answered' ? r.sources.find((s) => s.id.startsWith('answer-')) : null;
         const pill = verified
@@ -1085,7 +1088,7 @@ Live.mountStory = function mountStory() {
       root.innerHTML = '<p class="live-pending" role="status">Reviewing recent PRs, tickets and account history…</p>';
       stamp.textContent = 'Scanning'; stamp.className = 'pill plain';
       try {
-        const r = await retrying('/api/brief', {}, () => { const p = root.querySelector('.live-pending'); if (p) p.textContent = 'The AI is busy for a moment. Retrying…'; });
+        const r = await retrying('/api/brief', {}, () => { const p = root.querySelector('.live-pending'); if (p) p.textContent = 'Still reviewing recent work…'; });
         const s = await refreshState().catch(() => ({experts: []}));
         const blocks = sections(r.answer || '');
         let list = Array.isArray(r.gaps) && r.gaps.length ? r.gaps : [];
