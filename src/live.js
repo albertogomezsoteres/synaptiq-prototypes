@@ -42,11 +42,11 @@ const Live = (() => {
     try {health=await request('/api/health'); status.textContent=health.ai_configured ? 'Live AI · shared workspace' : 'Workspace connected · AI key needed'; status.className='pill '+(health.ai_configured?'ok':'gap'); await refreshState();}
     catch(e) {status.textContent=base ? 'Workspace offline · reconnect' : 'Connect workspace to use live AI';status.className='pill gap';health=null;}
   }
-  function setup() {
+  function setup(opts={}) {
     const brand = document.querySelector('#brand');
     if (brand && !brand.innerHTML.trim()) brand.innerHTML = BRAND;
     const bar=document.createElement('div'); bar.className='live-bar';
-    bar.innerHTML=`<span id="liveStatus" class="pill plain">Connecting workspace…</span><nav class="live-versions" aria-label="Switch prototype"><a href="${E(link('a'))}">A · Ask</a><a href="${E(link('b'))}">B · Expert</a><a href="${E(link('c'))}">C · Briefing</a></nav><div class="row"><button class="btn quiet" id="liveDocs" type="button">Company documents</button><button class="btn quiet" id="liveConnect" type="button">Connect workspace</button><button class="btn quiet" id="liveReset" type="button">Reset shared demo</button></div>`;
+    bar.innerHTML=`<span id="liveStatus" class="pill plain">Connecting workspace…</span>${opts.versions===false?'':`<nav class="live-versions" aria-label="Switch prototype"><a href="${E(link('a'))}">A · Ask</a><a href="${E(link('b'))}">B · Expert</a><a href="${E(link('c'))}">C · Briefing</a></nav>`}<div class="row"><button class="btn quiet" id="liveDocs" type="button">Company documents</button><button class="btn quiet" id="liveConnect" type="button">Connect workspace</button><button class="btn quiet" id="liveReset" type="button">${opts.resetLabel||'Reset shared demo'}</button></div>`;
     const main=document.querySelector('.main') || document.querySelector('.page'); main.prepend(bar);
     document.querySelector('#liveConnect').onclick=connect;
     document.querySelector('#liveDocs').onclick=documents;
@@ -130,5 +130,5 @@ const Live = (() => {
     async function brief(){if(generating)return;generating=true;const b=document.querySelector('#generateBrief'),root=document.querySelector('#briefResult'),stamp=document.querySelector('#briefStamp');b.disabled=true;root.innerHTML='<p class="live-pending" role="status">Preparing your handoff from current documents and expert answers…</p>';stamp.textContent='Preparing';try{const r=await request('/api/brief',{});await refreshState();root.innerHTML=sections(r.answer)+`<details class="live-brief-evidence"><summary>Inspect ${r.sources.length} supporting source${r.sources.length===1?'':'s'}</summary>${sourceList(r.sources)}</details><p class="k">Missing rationale? Use the decision check to ask, then route it to the expert.</p>`;stamp.textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});stamp.className='pill ok';}catch(e){root.replaceChildren();error(root,e);stamp.textContent='Retry available';stamp.className='pill gap';}finally{generating=false;b.disabled=false;}}
     brief();
   }
-  return {mountA,mountB,mountC,setup};
+  return {mountA,mountB,mountC,setup,_internals:{E,request,refreshState,task,error,sourceList,setup}};
 })();

@@ -1,9 +1,83 @@
-<title>Synaptiq Expert Inbox</title>
+<title>Synaptiq · Prototype B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..700&display=swap">
 <style>
 /*SHARED_CSS*/
+/* Prototype B: chat (Ask) */
+/* Version A: chat thread with evidence-carrying answers */
+.thread { display: flex; flex-direction: column; gap: 22px; }
+.empty { display: flex; flex-direction: column; gap: 14px; padding-top: 6vh; }
+.empty h1 { font-size: clamp(26px, 4vw, 34px); line-height: 1.12; max-width: 18ch; }
+.empty p { color: var(--muted); max-width: 52ch; }
+.suggest { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.suggest button {
+  text-align: left; display: block; width: 100%; line-height: 1.5; overflow-wrap: break-word;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: 14px 16px; font-size: 15px;
+  transition: border-color .2s, box-shadow .3s var(--ease), transform .3s var(--ease);
+  animation: rise .5s var(--ease) both;
+}
+.suggest button:nth-child(2) { animation-delay: .08s; }
+.suggest button:nth-child(3) { animation-delay: .16s; }
+.suggest .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--sunk); color: var(--muted); transition: background .25s, color .25s, transform .35s var(--spring); }
+.suggest .ic svg { width: 17px; height: 17px; }
+.suggest button:hover { border-color: var(--brand); transform: translateX(4px); box-shadow: var(--shadow); }
+.suggest button:hover .ic { background: var(--brand-weak); color: var(--brand); transform: rotate(-6deg) scale(1.06); }
+.suggest button small { color: var(--faint); font-size: 12.5px; white-space: nowrap; transition: color .2s; }
+.suggest button:hover small { color: var(--brand); }
+.q { align-self: flex-end; max-width: min(560px, 88%); background: var(--band); color: var(--band-ink); padding: 10px 14px; border-radius: 16px 16px 4px 16px; font-size: 15px; transform-origin: bottom right; animation: bubble .4s var(--spring) both; }
+@keyframes bubble { from { opacity: 0; transform: scale(.92) translateY(6px); } }
+.a { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; }
+.a-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-weak); color: var(--brand); display: grid; place-items: center; animation: pop .4s var(--spring) both; }
+.a-mark img { width: 20px; height: 20px; object-fit: contain; }
+.a-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lead { font-size: 15px; line-height: 1.55; }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; }
+.label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.warn { background: var(--gap-weak); color: var(--ink); border-radius: var(--r-md); padding: 10px 12px; font-size: 14px; display: flex; gap: 10px; }
+.warn b { color: var(--gap); }
+.expert { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; padding: 12px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); transition: border-color .25s, background .25s; }
+.expert:hover { border-color: var(--brand); background: color-mix(in srgb, var(--brand-weak) 45%, transparent); }
+.expert .who { flex: 1 1 220px; min-width: 0; font-size: 14px; line-height: 1.4; }
+.expert .who strong { display: block; }
+.expert .who span { color: var(--muted); font-size: 13px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.draft { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--sunk); border-radius: var(--r-md); }
+.draft textarea { width: 100%; min-height: 104px; resize: vertical; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); padding: 10px 12px; font-size: 14px; line-height: 1.45; }
+.attach { display: flex; gap: 6px; flex-wrap: wrap; }
+.attach span { font-size: 12.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted); font-family: var(--f-code); transition: border-color .2s, color .2s; }
+.attach span:hover { border-color: var(--brand); color: var(--brand); }
+.waiting { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.waiting .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--brand); animation: spin .8s linear infinite; }
+.saved-note { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--brand); font-weight: 600; }
+.recap { border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+.recap h2 { font-size: 20px; }
+.recap p { color: var(--muted); max-width: 60ch; }
+.composer {
+  border-top: 1px solid var(--line); background: var(--surface);
+  padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+.composer form { max-width: 832px; margin: 0 auto; display: flex; gap: 8px; }
+.composer input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--paper); border-radius: var(--r-md); padding: 11px 14px; font-size: 15px; transition: border-color .2s, box-shadow .25s, background .2s; }
+.composer input:hover { border-color: var(--line-strong); }
+.composer input:focus { outline: none; border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 16%, transparent); }
+.composer .btn svg { transition: transform .35s var(--spring); }
+.composer .btn:hover svg { transform: translate(2px, -2px) rotate(-8deg); }
+.chips { max-width: 832px; margin: 0 auto 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--muted); transition: border-color .2s, color .2s, background .2s, transform .25s var(--ease); animation: rise .4s var(--ease) both; }
+.chips button:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-weak); transform: translateY(-1px); }
+.chips button[disabled] { opacity: .5; transform: none; }
+@media (max-width: 860px) {
+  .composer { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .empty { padding-top: 0; }
+  .suggest button small { display: none; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; margin-bottom: 8px; scrollbar-width: none; }
+  .chips button { white-space: nowrap; }
+}
+/* Expert Inbox */
 /* Version B: inbox list + detail, with a running impact ledger */
 .work-inner { max-width: 1120px; }
 .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -122,44 +196,105 @@
   .d-head, .d-body { padding-left: 14px; padding-right: 14px; }
   .set { grid-template-columns: minmax(0, 1fr); }
 }
+.page-h { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
+.page-h h1 { font-size: clamp(24px, 3.4vw, 30px); }
+.page-h p { color: var(--muted); font-size: 14.5px; max-width: 60ch; }
+
+/* Prototype B: one page, three views, one story */
+.item .q { align-self: auto; max-width: none; background: none; color: inherit; padding: 0; border-radius: 0; animation: none; font-size: 14.5px; }
+#viewAsk .work-inner { max-width: 880px; }
+#viewInbox .work-inner, #viewGaps .work-inner { max-width: 1120px; }
+.view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.story { display: flex; align-items: center; gap: 6px; padding: 10px 24px; border-bottom: 1px solid var(--line); background: var(--paper); overflow-x: auto; scrollbar-width: none; }
+.story::-webkit-scrollbar { display: none; }
+.story button { display: inline-flex; align-items: center; gap: 8px; flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px 5px 5px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; transition: border-color .2s, color .2s, box-shadow .25s; }
+.story button:hover { border-color: var(--brand); color: var(--ink); }
+.story .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); color: var(--muted); font: 700 12px var(--f-display); }
+.story .n svg { width: 12px; height: 12px; }
+.story button.now { border-color: var(--brand); color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent); }
+.story button.now .n { background: var(--brand); color: var(--brand-ink); }
+.story button.done { color: var(--ink); }
+.story button.done .n { background: var(--brand-weak); color: var(--brand); }
+.story .sep { width: 14px; height: 1.5px; background: var(--line-strong); flex: none; }
+.scenario .who.is-ai { background: var(--brand-weak); }
+.scenario .who.is-ai img { width: 22px; height: 22px; object-fit: contain; }
+.nav a { cursor: pointer; }
+.nav .count[hidden] { display: none; }
+.pill.verified { background: color-mix(in srgb, #1e8a4c 14%, transparent); color: #1e8a4c; }
+.kcard.is-verified { border-color: color-mix(in srgb, #1e8a4c 45%, var(--line)); }
+.routed { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: var(--r-md); background: var(--brand-weak); }
+.routed .saved-note { color: var(--brand); }
+.routed .saved-note svg { width: 16px; height: 16px; flex: none; }
+.draft-note { margin-top: -8px; }
+.draft-note b { color: var(--gap); }
+.page-h .k { font-size: 12.5px; font-weight: 650; letter-spacing: .04em; color: var(--brand); }
+.gaps-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.gaps-head .page-h { margin-bottom: 0; }
+.gap-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.gap-card { display: flex; flex-direction: column; gap: 12px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--gap); border-radius: var(--r-lg); box-shadow: var(--shadow); animation: rise .45s var(--ease) both; }
+.gap-card:nth-child(2) { animation-delay: .08s; } .gap-card:nth-child(3) { animation-delay: .16s; } .gap-card:nth-child(4) { animation-delay: .24s; }
+.gap-card h3 { font-size: 16.5px; line-height: 1.35; }
+.gap-card .k { font-size: 13px; color: var(--muted); }
+.rail-foot .chosen { color: var(--brand); font-weight: 650; }
+@media (max-width: 860px) { .story { padding: 8px 12px; } .story .sep { width: 8px; } .gap-list { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <div class="app">
   <aside class="rail">
-    <a class="brand" id="brand" href="{{HOME}}" aria-label="Synaptiq, all versions"></a>
+    <a class="brand" id="brand" href="{{HOME}}" aria-label="Synaptiq home"></a>
     <div class="workspace"><div class="ws-logo">C</div><div class="ws-meta"><strong>Corvex Payments</strong><span>Engineering workspace</span></div></div>
-    <nav class="nav" aria-label="Synaptiq">
-      <a class="on" href="#inbox" onclick="return false">Expert inbox <span class="count" id="navCount">4</span></a>
-      <a href="#answered" onclick="return false">My answers <span class="count" id="navAnswered">37</span></a>
-      <a href="#ask" onclick="return false">Ask</a>
+    <nav class="nav" id="storyNav" aria-label="Synaptiq">
+      <a href="#ask" data-nav="ask">Ask</a>
+      <a href="#inbox" data-nav="inbox">Expert Inbox <span class="count" id="inboxCount" hidden>0</span></a>
+      <a href="#gaps" data-nav="gaps">Gaps found <span class="count" id="gapCount" hidden>0</span></a>
     </nav>
-    <section class="try" id="try" aria-label="Demo steps"></section>
+    <section class="try" aria-label="About this prototype"><h4>One company memory</h4><p>Engineers ask, experts answer once, and Synaptiq finds what was never written down. Everything here runs on live AI.</p></section>
     <div class="rail-foot">
-      <span>Version B of 3</span>
-      <a href="{{HOME}}">All three versions</a>
+      <span class="chosen">Prototype B · chosen by users</span>
+      <a href="{{HOME}}">About Synaptiq</a>
     </div>
   </aside>
 
   <div class="main">
+    <nav class="story" id="story" aria-label="Demo story"></nav>
     <div class="scenario">
-      <div class="who" aria-hidden="true">MC</div>
-      <p><b>You're the expert who knows the missing context.</b> Questions from A arrive here with the evidence already found. Publish an explanation once so everyone can reuse it.</p>
-      <button class="restart" id="restart" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Restart demo</button>
+      <div class="who" id="personaWho" aria-hidden="true">S</div>
+      <p id="personaText"></p>
+      <button class="restart" id="restart" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Clear chat</button>
     </div>
-    <div class="work" id="work"><div class="work-inner">
-      <div class="top">
-        <div><h1 id="pageTitle">Your inbox</h1><p id="pageSub">Questions company memory couldn't answer. Each one arrives with a draft and the evidence Synaptiq found, so a reply takes seconds.</p></div>
-        <div class="tabs" role="tablist" aria-label="View">
-          <button role="tab" type="button" data-tab="inbox" aria-selected="true">Inbox</button>
-          <button role="tab" type="button" data-tab="settings" aria-selected="false">Settings</button>
-        </div>
+
+    <section class="view" id="viewAsk" aria-label="Ask">
+      <div class="work" id="workAsk"><div class="work-inner"><div class="thread" id="thread"></div></div></div>
+      <div class="composer">
+        <div class="chips" id="chips"></div>
+        <form id="ask">
+          <label class="sr-only" for="askInput">Ask Synaptiq</label>
+          <input id="askInput" autocomplete="off" placeholder="Ask about any Corvex system…">
+          <button class="btn primary" type="submit" id="askBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Ask</button>
+        </form>
       </div>
-      <div id="view"></div>
-    </div></div>
+    </section>
+
+    <section class="view" id="viewInbox" aria-label="Expert Inbox" hidden>
+      <div class="work"><div class="work-inner">
+        <div class="top"><div><h1>Expert Inbox</h1><p>Only what the documentation can't answer. Each question arrives with the evidence Synaptiq already found, so replying takes a minute.</p></div></div>
+        <div id="inboxView"></div>
+      </div></div>
+    </section>
+
+    <section class="view" id="viewGaps" aria-label="Gaps found" hidden>
+      <div class="work"><div class="work-inner">
+        <div class="gaps-head">
+          <div class="page-h"><span class="k">FOUND WITHOUT A QUESTION · BLUEWATER LOGISTICS ACCOUNT</span><h1>Gaps Synaptiq found this week</h1><p>Synaptiq reads recent PRs, tickets and account history, and flags decisions nobody explained. Each gap goes to the person who knows, before it blocks anyone.</p></div>
+          <div class="row"><span class="pill plain" id="gapsStamp">Not scanned</span><button class="btn" id="scanAgain" type="button">Scan again</button></div>
+        </div>
+        <div id="gapsResult" aria-live="polite"></div>
+      </div></div>
+    </section>
   </div>
 </div>
 
 <script>
 //SHARED_JS
-Live.mountB();
+Live.mountStory();
 </script>

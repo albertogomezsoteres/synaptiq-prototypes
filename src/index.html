@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..700&display=swap">
 <style>
 /*SHARED_CSS*/
-/* Hub: thesis and live loop diagram, then the three versions as comparable rows */
+/* Hub: thesis and live loop diagram, then the prototype */
 html, body { height: auto; }
 .page {
   max-width: 1100px; margin: 0 auto;
@@ -84,6 +84,28 @@ html, body { height: auto; }
   .v .letter { font-size: 42px; }
   .v .hyp, .v .go { grid-column: 1; }
 }
+
+.product { display: flex; flex-direction: column; gap: 22px; border-top: 2px solid var(--ink); padding-top: 26px; animation: rise .6s .25s var(--ease) both; }
+.product-head { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; max-width: 760px; }
+.product-head .eyebrow { font-size: 13px; font-weight: 650; color: var(--brand); letter-spacing: .02em; }
+.product-head h2 { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.12; letter-spacing: -.02em; }
+.product-head p { color: var(--muted); font-size: 15.5px; line-height: 1.55; max-width: 62ch; }
+.product-head .go { text-decoration: none; margin-top: 4px; }
+.product-head .go svg { transition: transform .35s var(--spring); }
+.product-head .go:hover svg { transform: translateX(3px); }
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.f { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: var(--r-lg); transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+.f:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+.f.is-gap { border-top-color: var(--gap); }
+.f-n { font: 700 34px/1 var(--f-display); background: linear-gradient(160deg, var(--brand) 20%, var(--cyan) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.f.is-gap .f-n { background: none; color: var(--gap); }
+.f h3 { font-size: 19px; }
+.f p { font-size: 14.5px; color: var(--muted); line-height: 1.5; flex: 1; }
+.f .persona { display: flex; gap: 10px; align-items: center; font-size: 13.5px; padding-top: 12px; border-top: 1px solid var(--line); }
+.f .persona .avatar { width: 30px; height: 30px; font-size: 11px; }
+.f .persona b { display: block; font-size: 14px; }
+.f .persona span span { color: var(--muted); }
+@media (max-width: 900px) { .features { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <div class="page">
@@ -122,43 +144,39 @@ html, body { height: auto; }
     </figure>
   </section>
 
-  <section class="versions" aria-label="Three versions">
-    <article class="v">
-      <div class="letter" aria-hidden="true">A</div>
-      <div>
-        <h2>Ask Synaptiq</h2>
-        <p class="approach">The engineer asks. Answers carry their evidence, or admit the gap.</p>
-        <div class="persona"><span class="avatar av-3">S</span><span><b>New-to-system engineer</b><span>Sam, three weeks in</span></span></div>
-      </div>
-      <p class="hyp"><span class="k">Hypothesis</span>Engineers will trust and act on answers that show source, owner and available freshness information, and that say "not found" and route the question, more than on a confident chatbot answer.<span class="signal"><b>Validated if</b> testers would act on the answer and see "not found" as helpful.</span></p>
-      <a class="btn primary go" href="{{A}}">Open version A<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
-    </article>
-    <article class="v">
-      <div class="letter" aria-hidden="true">B</div>
-      <div>
-        <h2>Expert Inbox</h2>
-        <p class="approach">The expert contributes. A missing explanation becomes shared knowledge that A and C can actually reuse.</p>
-        <div class="persona"><span class="avatar av-1">MC</span><span><b>Go-to expert engineer</b><span>Maria, the one everyone asks</span></span></div>
-      </div>
-      <p class="hyp"><span class="k">Hypothesis</span>Experts will prefer publishing one scoped explanation with the evidence in view to repeatedly answering the same question in DMs.<span class="signal"><b>Validated if</b> testers publish an explanation in under a minute and prefer it to a repeated DM.</span></p>
-      <a class="btn primary go" href="{{B}}">Open version B<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
-    </article>
-    <article class="v">
-      <div class="letter" aria-hidden="true">C</div>
-      <div>
-        <h2>Context Briefing</h2>
-        <p class="approach">Synaptiq goes first. The briefing arrives before anyone asks.</p>
-        <div class="persona"><span class="avatar av-2">N</span><span><b>Deployment engineer</b><span>Nico, new to a customer account</span></span></div>
-      </div>
-      <p class="hyp"><span class="k">Hypothesis</span>Engineers entering unfamiliar work get unblocked faster when Synaptiq shows what changed, why, who worked on it, and what nobody wrote down, before they ask anything.<span class="signal"><b>Validated if</b> testers make the right call on their first ticket without asking anyone.</span></p>
-      <a class="btn primary go" href="{{C}}">Open version C<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
-    </article>
+  <section class="product" aria-label="Prototype B">
+    <div class="product-head">
+      <span class="eyebrow">Prototype B · chosen by users in our A/B test</span>
+      <h2>Engineers ask. Experts answer once. Synaptiq finds what was never written down.</h2>
+      <p>We built and tested three prototypes with engineers. They chose B, the Expert Inbox. This is B, now with gap detection built in, running on live AI.</p>
+      <a class="btn primary go" href="{{B}}">Open the live prototype<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </div>
+    <div class="features">
+      <article class="f">
+        <span class="f-n">1</span>
+        <h3>Ask with evidence</h3>
+        <p>Answers from docs, code and tickets, with sources. When something was never written down, Synaptiq says so instead of guessing.</p>
+        <div class="persona"><span class="avatar av-3">S</span><span><b>Sam</b><span>New engineer, first day</span></span></div>
+      </article>
+      <article class="f">
+        <span class="f-n">2</span>
+        <h3>Expert Inbox</h3>
+        <p>The question reaches the one person who knows, with the evidence and a drafted answer. She answers once, and everyone reuses it.</p>
+        <div class="persona"><span class="avatar av-1">MC</span><span><b>Maria</b><span>The expert everyone asks</span></span></div>
+      </article>
+      <article class="f is-gap">
+        <span class="f-n">3</span>
+        <h3>Gap detection</h3>
+        <p>Synaptiq reviews recent work and flags decisions nobody explained, before anyone gets stuck on them.</p>
+        <div class="persona"><span class="avatar av-2">AI</span><span><b>Synaptiq</b><span>No question needed</span></span></div>
+      </article>
+    </div>
   </section>
 
-  <section class="how" aria-label="How to try them">
-    <p><b>About two minutes each</b>Follow the steps on the left. A answers, B captures expert knowledge, and C prepares a customer handoff.</p>
-    <p><b>Same company, same data</b>All three run on one fictional company, Corvex Payments, so the only difference is the approach.</p>
-    <p><b>Then vote</b>Which one would you actually use?</p>
+  <section class="how" aria-label="How to try it">
+    <p><b>About three minutes</b>Follow the five steps at the top of the prototype: ask, hit a gap, answer as the expert, ask again, see the gaps.</p>
+    <p><b>One company, one memory</b>Everything runs on Corvex Payments, a fictional company, so every answer builds on the last one.</p>
+    <p><b>Live AI</b>Answers come from a real model reading the company's documents. Nothing is scripted.</p>
   </section>
 
   <footer class="foot">
@@ -170,6 +188,6 @@ html, body { height: auto; }
 <script>
 //SHARED_JS
 $("#brand").innerHTML = BRAND;
-Live.setup();
+Live.setup({versions:false, resetLabel:'Reset demo'});
 if (REDUCED) { const svg = $(".loop-fig svg"); if (svg && svg.pauseAnimations) svg.pauseAnimations(); }
 </script>

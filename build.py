@@ -10,7 +10,7 @@ import pathlib
 ROOT = pathlib.Path(__file__).parent
 SRC = ROOT / "src"
 CSS = (SRC / "shared.css").read_text(encoding="utf-8") + "\n" + (SRC / "live.css").read_text(encoding="utf-8")
-JS = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("shared.js", "config.js", "live.js"))
+JS = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("shared.js", "config.js", "live.js", "story.js"))
 ASSETS = ROOT / "assets"
 
 
@@ -24,7 +24,7 @@ PAGES = {"index": "index.html", "a": "a.html", "b": "b.html", "c": "c.html"}
 HEAD = (
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-    '<meta name="description" content="Synaptiq: three interactive prototypes for closing knowledge gaps in engineering teams.">\n'
+    '<meta name="description" content="Synaptiq: a live prototype that finds what your company forgot to document.">\n'
     '<meta name="theme-color" content="#072548">\n'
     f'<link rel="icon" type="image/png" href="{data_uri("favicon.png")}">\n'
 )
